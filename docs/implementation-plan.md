@@ -8,10 +8,21 @@ TDD（テスト駆動開発）とOpenAPIスキーマ駆動開発を実践し、�
 ## 🎯 実装目標
 
 - [x] **Phase 1**: プロジェクト基盤整備 ✅
-- [ ] **Phase 2**: バックエンド完全実装
-- [ ] **Phase 3**: 共通パッケージ・フロントエンド実装  
-- [ ] **Phase 4**: テスト・CI/CD実装
+- [x] **Phase 1.5**: Cloudflareリソース設定 ✅
+- [ ] **Phase 2**: CI/CDパイプライン構築 🔄 **【優先実装】**
+- [ ] **Phase 3**: バックエンド完全実装（データベース・認証・CRUD）
+- [ ] **Phase 4**: 共通パッケージ・フロントエンド実装  
 - [ ] **Phase 5**: デプロイ・運用
+
+## ⚠️ 実装順序変更について
+
+**2025年7月22日更新**: 開発品質を最優先し、CI/CDパイプライン構築を前倒し実装することに決定。
+
+**変更理由:**
+- ✅ **品質保証**: 全ての後続コード変更が自動テスト・リントを通過
+- ✅ **開発効率**: 手動デプロイ・テスト作業の自動化で開発スピード向上
+- ✅ **学習価値**: プロダクション開発プロセスの早期体験
+- ✅ **デプロイ安全性**: 本番環境の一貫性とロールバック対応
 
 ## 📅 Phase 1: プロジェクト基盤整備
 
@@ -21,66 +32,92 @@ TDD（テスト駆動開発）とOpenAPIスキーマ駆動開発を実践し、�
 - [x] API仕様書作成（OpenAPI準拠）  
 - [x] 実装計画書作成（本ドキュメント）
 
-### 🔄 1.2 GitHubリポジトリ初期化
-- [ ] GitHubリポジトリ作成
-- [ ] 初期コミット・プッシュ
-- [ ] ブランチ保護設定（main）
+### ✅ 1.2 GitHubリポジトリ初期化
+- [x] GitHubリポジトリ作成
+- [x] 初期コミット・プッシュ
+- [x] ブランチ保護設定（main）
 - [ ] Issue・PR テンプレート作成
 
-**実装手順:**
+## 📅 Phase 1.5: Cloudflareリソース設定 ✅
+
+### ✅ 1.5.1 Cloudflareリソース設定
+- [x] Cloudflare D1データベース作成（`todo-app-db`）
+- [x] Cloudflare KVネームスペース作成（JWT公開鍵キャッシュ用）
+- [x] wrangler.jsonc更新（バインディング追加）
+- [x] TypeScript型定義更新（`wrangler types`）
+- [x] Firebase設定手順をREADMEに記載
+
+**完了済みリソース:**
 ```bash
-# 1. GitHub CLI でリポジトリ作成
-gh repo create cloudflare-todo-sample --public --description "学習用ToDoアプリ（Cloudflare + React + Firebase）"
+# D1データベース
+Database ID: 07aab756-fe4a-4042-9e12-177b680ed67d
+Binding: DB
 
-# 2. リモートリポジトリ設定
-git remote add origin https://github.com/[username]/cloudflare-todo-sample.git
-
-# 3. 初期コミット・プッシュ
-git add .
-git commit -m "🎉 Initial commit: Project setup with backend API structure
-
-📝 Setup complete:
-- Backend: Hono + TypeScript + Zod + Chanfana (OpenAPI)
-- Monorepo: pnpm workspace configuration
-- Docs: Requirements, system design, API specification, implementation plan
-- MCP: Cloudflare documentation and workers bindings integration
-
-🎯 Next: Initialize GitHub repository and implement database layer
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-git push -u origin main
-
-# 4. ブランチ保護設定（GitHub Web UIまたはAPI）
+# KVネームスペース
+Production ID: a9500f6c3127441b94e29a15f4fa7bb0  
+Preview ID: 4d9b8ee3bfb04fbb92f9fb1c09adc173
+Binding: JWT_CACHE
 ```
 
-## 📅 Phase 2: バックエンド完全実装
+## 📅 Phase 2: CI/CDパイプライン構築 🔄 【現在実装中】
 
-### 🔄 2.1 Cloudflareリソース設定
-- [ ] Cloudflare D1データベース作成
-- [ ] Cloudflare KVネームスペース作成（JWT公開鍵キャッシュ用）
-- [ ] Workers Secrets設定（Firebase設定）
-- [ ] wrangler.jsonc更新（バインディング追加）
+### 🔄 2.1 GitHub Actions ワークフロー設計
 
-**実装手順:**
-```bash
-# 1. D1データベース作成
-wrangler d1 create todo-app-db
+#### 継続的インテグレーション (CI) パイプライン
+- [ ] `.github/workflows/ci.yml` 作成
+- [ ] Lint・TypeScript型チェック自動実行
+- [ ] ユニットテスト実行・カバレッジレポート
+- [ ] モノレポ対応（backend/frontend/shared 並列処理）
 
-# 2. KVネームスペース作成
-wrangler kv:namespace create "JWT_CACHE"
+#### 継続的デプロイ (CD) パイプライン  
+- [ ] `.github/workflows/deploy.yml` 作成
+- [ ] Cloudflare Workers（バックエンド）自動デプロイ
+- [ ] Cloudflare Pages（フロントエンド）自動デプロイ
+- [ ] デプロイ前テスト・品質チェック
 
-# 3. wrangler.jsonc更新
-# [[d1_databases]]、[[kv_namespaces]]セクション追加
+### 🔄 2.2 開発環境・コード品質設定
 
-# 4. Firebase設定（Secrets設定）
-wrangler secret put FIREBASE_PROJECT_ID
-wrangler secret put FIREBASE_CLIENT_EMAIL
-```
+#### Linting・Formatting設定
+- [ ] ESLint設定ファイル作成（`.eslintrc.js`）
+- [ ] Prettier設定ファイル作成（`.prettierrc`）
+- [ ] TypeScript strict設定確認
 
-### 🔄 2.2 データベース設計・実装
+#### テストフレームワーク設定
+- [ ] Vitest設定ファイル作成（`vitest.config.ts`）
+- [ ] 各パッケージにテストスクリプト追加
+- [ ] カバレッジ設定・閾値設定
+
+#### Package.json Scripts整備
+- [ ] 各パッケージに標準スクリプト追加
+  - `lint`: ESLint実行
+  - `lint:fix`: ESLint修正
+  - `typecheck`: TypeScript型チェック
+  - `test`: テスト実行
+  - `test:coverage`: カバレッジレポート
+
+### 🔄 2.3 プロジェクト構造強化
+
+#### GitHub Templates作成
+- [ ] `.github/ISSUE_TEMPLATE/` 作成
+  - `bug_report.md`: バグ報告テンプレート
+  - `feature_request.md`: 機能要求テンプレート  
+  - `task.md`: タスクテンプレート
+- [ ] `.github/pull_request_template.md` 作成
+
+#### ドキュメント整備
+- [ ] `CONTRIBUTING.md` 作成（開発ガイドライン）
+- [ ] Cloudflareリポジトリsecrets設定手順文書化
+- [ ] デプロイ・CI/CD運用マニュアル作成
+
+**実装完了条件:**
+- ✅ 全PRでCI/CDが自動実行される
+- ✅ mainブランチへのpushで自動デプロイが動作する  
+- ✅ Lint・TypeScript・テストが全て通る
+- ✅ GitHub ActionsのSecretsが正しく設定されている
+
+## 📅 Phase 3: バックエンド完全実装（データベース・認証・CRUD）
+
+### 🔄 3.1 データベース設計・実装
 - [ ] Drizzle ORM依存関係追加
 - [ ] スキーマ定義（users、todos テーブル）
 - [ ] マイグレーションファイル作成
@@ -124,39 +161,13 @@ packages/backend/src/
     └── logger.ts          # ログ出力
 ```
 
-### 🔄 2.3 Firebase Authentication統合
+### 🔄 3.2 Firebase Authentication統合
 - [ ] Firebase JWT検証ライブラリ選定・追加
 - [ ] JWT検証ミドルウェア実装
 - [ ] 認証エンドポイント追加（`POST /api/auth/verify`）
 - [ ] ユーザー管理サービス実装
 
-**実装手順:**
-```typescript
-// 1. JWT検証ライブラリ追加
-pnpm add jose  // Cloudflare Workers対応JWT検証ライブラリ
-
-// 2. 認証ミドルウェア実装例
-export async function authMiddleware(c: Context, next: Next) {
-  const authHeader = c.req.header('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return c.json({ success: false, error: { code: 'UNAUTHORIZED', message: '認証が必要です' } }, 401);
-  }
-  
-  const token = authHeader.substring(7);
-  const user = await verifyFirebaseJWT(token, c.env);
-  
-  c.set('user', user);
-  await next();
-}
-
-// 3. JWT検証実装
-async function verifyFirebaseJWT(token: string, env: Env) {
-  // Firebase公開鍵キャッシュからの検証
-  // KV Storeを使用したキャッシュ実装
-}
-```
-
-### 🔄 2.4 CRUD機能実装  
+### 🔄 3.3 CRUD機能実装  
 - [ ] 既存エンドポイントをデータベース操作に修正
 - [ ] エラーハンドリング強化
 - [ ] バリデーション詳細化
@@ -170,37 +181,15 @@ async function verifyFirebaseJWT(token: string, env: Env) {
 5. `DELETE /api/todos/:slug` - タスク削除（論理削除）
 6. `POST /api/auth/verify` - 認証確認・ユーザー情報取得
 
-**実装順序:**
-1. 認証機能 → 2. ユーザー管理 → 3. Todo作成 → 4. Todo取得 → 5. Todo更新 → 6. Todo削除
+## 📅 Phase 4: 共通パッケージ・フロントエンド実装
 
-## 📅 Phase 3: 共通パッケージ・フロントエンド実装
-
-### 🔄 3.1 packages/shared作成
+### 🔄 4.1 packages/shared作成
 - [ ] 共通型定義（APIレスポンス、エラー型など）
 - [ ] API型定義（OpenAPI仕様との一致確認）
 - [ ] ユーティリティ関数（日付操作、バリデーションなど）
 - [ ] 定数定義
 
-**ファイル構成:**
-```
-packages/shared/src/
-├── types/
-│   ├── api.ts             # APIレスポンス型
-│   ├── todo.ts            # Todo関連型
-│   ├── user.ts            # User関連型
-│   └── common.ts          # 共通型（ページネーション等）
-├── utils/
-│   ├── date.ts            # 日付操作
-│   ├── validation.ts      # バリデーション
-│   └── formatter.ts       # フォーマッタ
-├── constants/
-│   ├── api.ts             # APIエンドポイント
-│   ├── config.ts          # 設定値
-│   └── messages.ts        # メッセージ定数
-└── index.ts               # エクスポート
-```
-
-### 🔄 3.2 packages/frontend作成
+### 🔄 4.2 packages/frontend作成
 - [ ] Vite + React + TypeScript環境構築
 - [ ] Tailwind CSS設定
 - [ ] React Router設定
@@ -243,49 +232,6 @@ npx tailwindcss init -p
 - [ ] Todo作成・編集フォーム
 - [ ] Todo詳細ページ
 
-## 📅 Phase 4: テスト・CI/CD実装
-
-### 🔄 4.1 テスト実装（TDD）
-- [ ] バックエンドユニットテスト（Vitest）
-  - 認証ミドルウェアテスト
-  - Todoサービステスト  
-  - APIエンドポイントテスト
-- [ ] フロントエンドコンポーネントテスト
-  - React Testing Library
-  - コンポーネント単体テスト
-- [ ] E2Eテスト（Playwright）
-  - ログイン・ログアウトフロー
-  - Todo CRUD フロー
-
-**実装手順:**
-```bash
-# 1. バックエンドテストセットアップ
-cd packages/backend
-pnpm add -D vitest @vitest/ui c8
-
-# 2. フロントエンドテストセットアップ
-cd packages/frontend  
-pnpm add -D vitest jsdom @testing-library/react @testing-library/jest-dom
-
-# 3. E2Eテストセットアップ
-pnpm add -D playwright @playwright/test
-
-# 4. テスト実行スクリプト追加
-# package.json の scripts セクション
-```
-
-### 🔄 4.2 GitHub Actions CI/CD
-- [ ] Lint・TypeCheck・Test自動実行
-- [ ] 自動デプロイ設定（Cloudflare Workers + Pages）
-- [ ] コード品質チェック（ESLint、Prettier）
-- [ ] セキュリティチェック
-
-**GitHub Actions ワークフロー:**
-```yaml
-# .github/workflows/ci.yml
-# .github/workflows/deploy.yml
-```
-
 ## 📅 Phase 5: デプロイ・運用
 
 ### 🔄 5.1 Cloudflareデプロイ
@@ -326,11 +272,16 @@ pnpm add -D playwright @playwright/test
 
 ## 📊 進捗管理
 
-### マイルストーン
-- **Week 1**: Phase 1-2 完了（バックエンド実装）
-- **Week 2**: Phase 3 完了（フロントエンド実装）
-- **Week 3**: Phase 4 完了（テスト・CI/CD）
+### マイルストーン（更新版）
+- **Week 1**: Phase 1 + 1.5 + 2 完了（基盤・CI/CD）✅🔄
+- **Week 2**: Phase 3 完了（データベース・認証・CRUD実装）
+- **Week 3**: Phase 4 完了（共通パッケージ・フロントエンド実装）
 - **Week 4**: Phase 5 完了（デプロイ・運用）
+
+### 実装フォーカス変更履歴
+- **2025-07-22**: CI/CDパイプライン構築を優先実装に変更
+  - **理由**: 開発品質保証・デプロイ安全性・学習価値の最大化
+  - **影響**: データベース実装をPhase 3に延期
 
 ### チェックリスト更新ルール
 - 作業開始時: 該当項目を「🔄 進行中」に変更
@@ -339,5 +290,6 @@ pnpm add -D playwright @playwright/test
 
 ---
 
-**最終更新**: 2024年1月1日  
-**次回更新予定**: Phase 2 完了時
+**最終更新**: 2025年7月22日  
+**次回更新予定**: Phase 2（CI/CD）完了時  
+**現在フェーズ**: Phase 2 - CI/CDパイプライン構築
