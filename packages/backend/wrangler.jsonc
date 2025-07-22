@@ -9,12 +9,7 @@
 	"compatibility_date": "2025-07-22",
 	"observability": {
 		"enabled": true
-	}
-	/**
-	 * Smart Placement
-	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": { "mode": "smart" },
+	},
 
 	/**
 	 * Bindings
@@ -24,10 +19,36 @@
 	 */
 
 	/**
+	 * D1 Database Binding
+	 * https://developers.cloudflare.com/d1/get-started/
+	 */
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "todo-app-db",
+			"database_id": "07aab756-fe4a-4042-9e12-177b680ed67d"
+		}
+	],
+
+	/**
+	 * KV Namespace Binding
+	 * https://developers.cloudflare.com/kv/get-started/
+	 */
+	"kv_namespaces": [
+		{
+			"binding": "JWT_CACHE",
+			"id": "a9500f6c3127441b94e29a15f4fa7bb0",
+			"preview_id": "4d9b8ee3bfb04fbb92f9fb1c09adc173"
+		}
+	],
+
+	/**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	// "vars": { "MY_VARIABLE": "production_value" },
+	"vars": {
+		"ENVIRONMENT": "development"
+	},
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
