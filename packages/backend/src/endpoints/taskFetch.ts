@@ -43,7 +43,9 @@ export class TaskFetch extends OpenAPIRoute {
     },
   };
 
-  async handle(_c: AppContext): Promise<{ success: boolean; task: Record<string, unknown> } | Response> {
+  async handle(
+    _c: AppContext
+  ): Promise<{ success: boolean; task: Record<string, unknown> } | Response> {
     // Get validated data
     const data = await this.getValidatedData<typeof this.schema>();
 
