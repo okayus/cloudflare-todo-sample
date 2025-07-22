@@ -1,16 +1,90 @@
-# Cloudflare Workers OpenAPI 3.1
+# Cloudflare Todo Sample - Backend API
 
-This is a Cloudflare Worker with OpenAPI 3.1 using [chanfana](https://github.com/cloudflare/chanfana) and [Hono](https://github.com/honojs/hono).
+Cloudflare Workers上で動作するToDoアプリケーションのバックエンドAPI。  
+OpenAPI 3.1準拠、Firebase Authentication対応、TDD実践による学習用プロジェクトです。
 
-This is an example project made to be used as a quick start into building OpenAPI compliant Workers that generates the
-`openapi.json` schema automatically from code and validates the incoming request to the defined parameters or request body.
+## 🛠️ 技術スタック
 
-## Get started
+- **Framework**: [Hono](https://hono.dev/) - 軽量で高速なWebフレームワーク
+- **OpenAPI**: [Chanfana](https://github.com/cloudflare/chanfana) - OpenAPI 3.1自動生成
+- **Database**: Cloudflare D1 (SQLite) - サーバーレスSQL database
+- **Cache**: Cloudflare KV - JWT公開鍵キャッシュ用
+- **Auth**: Firebase Authentication - JWT認証
+- **Platform**: Cloudflare Workers - エッジコンピューティング
 
-1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.
-2. Clone this project and install dependencies with `npm install`
-3. Run `wrangler login` to login to your Cloudflare account in wrangler
-4. Run `wrangler deploy` to publish the API to Cloudflare Workers
+## 🚀 セットアップ手順
+
+### 1. 前提条件
+
+1. [Cloudflare Workers](https://workers.dev)アカウント作成（無料プランで十分）
+2. Node.js 18+ インストール
+3. pnpm インストール (`npm install -g pnpm`)
+
+### 2. 依存関係インストール
+
+```bash
+pnpm install
+```
+
+### 3. Cloudflare認証
+
+```bash
+wrangler login
+```
+
+### 4. Cloudflareリソース設定確認
+
+プロジェクトには以下のリソースが設定済みです：
+
+```bash
+# D1データベース（設定済み）
+# Database ID: 07aab756-fe4a-4042-9e12-177b680ed67d
+# Binding: DB
+
+# KVネームスペース（設定済み）  
+# Namespace ID: a9500f6c3127441b94e29a15f4fa7bb0
+# Preview ID: 4d9b8ee3bfb04fbb92f9fb1c09adc173
+# Binding: JWT_CACHE
+```
+
+## 🔧 Firebase Authentication設定
+
+### 1. Firebaseプロジェクト作成
+
+1. [Firebase Console](https://console.firebase.google.com/)でプロジェクト作成
+2. **Authentication** > **Sign-in method** で以下を有効化：
+   - Email/Password認証
+   - Google認証（OAuth）
+
+### 2. Firebase設定情報の取得
+
+Firebase Console > プロジェクト設定 > 全般 から以下の情報を取得：
+
+- **Project ID**: `your-firebase-project-id`
+
+### 3. Workers Secrets設定
+
+Firebase設定をCloudflare Workers Secretsに保存：
+
+```bash
+# Firebase Project IDを設定（必須）
+wrangler secret put FIREBASE_PROJECT_ID
+# 入力: your-firebase-project-id
+
+# 本番環境でのみ必要（開発時は不要）
+# wrangler secret put FIREBASE_CLIENT_EMAIL
+```
+
+### 4. 環境変数確認
+
+設定が正しく反映されているかローカルサーバーで確認：
+
+```bash
+# 開発サーバー起動
+wrangler dev
+
+# ブラウザで http://localhost:8787/ を開いてSwagger UIを確認
+```
 
 ## Project structure
 
