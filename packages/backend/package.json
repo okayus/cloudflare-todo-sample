@@ -13,18 +13,26 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@cloudflare/d1": "^1.4.1",
     "chanfana": "^2.6.3",
+    "drizzle-orm": "^0.44.3",
     "hono": "^4.6.20",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
     "@types/node": "22.13.0",
     "@types/service-worker-mock": "^2.0.4",
-    "wrangler": "^4.25.0",
-    "@eslint/js": "^9.31.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "better-sqlite3": "^12.2.0",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9.31.0",
     "eslint-config-prettier": "^10.1.0",
     "eslint-plugin-prettier": "^5.5.0",
@@ -32,7 +40,7 @@
     "prettier": "^3.3.3",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.31.0",
-    "@vitest/coverage-v8": "^2.1.8",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^4.25.0"
   }
 }
