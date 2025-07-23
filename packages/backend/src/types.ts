@@ -10,10 +10,12 @@ import { z } from 'zod';
 export interface Env {
   /** D1データベースバインディング */
   DB: D1Database;
-  /** KVネームスペースバインディング（セッション管理等で使用予定） */
-  KV?: KVNamespace;
-  /** Workers Secrets（Firebase設定等） */
-  FIREBASE_PROJECT_ID?: string;
+  /** JWT公開鍵キャッシュ用KVネームスペース */
+  JWT_CACHE: KVNamespace;
+  /** Firebase Project ID */
+  FIREBASE_PROJECT_ID: string;
+  /** Firebase JWT公開鍵キャッシュキー */
+  PUBLIC_JWK_CACHE_KEY: string;
 }
 
 /**
