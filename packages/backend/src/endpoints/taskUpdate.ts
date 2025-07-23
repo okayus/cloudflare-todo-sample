@@ -1,25 +1,31 @@
 /**
- * TODO作成エンドポイント
+ * TODO更新エンドポイント
  *
- * 新しいTODOを作成する。
- * バリデーション、自動ID・スラッグ生成を実行。
+ * 既存TODOの情報を更新する。
+ * 部分更新をサポートし、ユーザー認証とアクセス権限をチェック。
  */
 import { OpenAPIRoute, Str } from 'chanfana';
 import { z } from 'zod';
-import { type AppContext, CreateTodoSchema, TodoSchema } from '../types';
+import { type AppContext, UpdateTodoSchema, TodoSchema } from '../types';
 import { getDatabase } from '../database/connection';
 import { TodoService } from '../services/todoService';
 
-export class TaskCreate extends OpenAPIRoute {
+export class TaskUpdate extends OpenAPIRoute {
   schema = {
     tags: ['Todos'],
-    summary: 'TODO作成',
-    description: '新しいTODOを作成します。ID・スラッグは自動生成されます。',
+    summary: 'TODO更新',
+    description: 'TODOの情報を更新します。部分更新をサポートします。',
     request: {
+      params: z.object({
+        taskSlug: Str({
+          description: 'TODOスラッグまたはID',
+          example: 'clean-room',
+        }),
+      }),
       body: {
         content: {
           'application/json': {
-            schema: CreateTodoSchema,
+            schema: UpdateTodoSchema,
           },
         },
       },
@@ -32,8 +38,8 @@ export class TaskCreate extends OpenAPIRoute {
       }),
     },
     responses: {
-      '201': {
-        description: 'TODO作成成功',
+      '200': {
+        description: 'TODO更新成功',
         content: {
           'application/json': {
             schema: z.object({
@@ -45,6 +51,17 @@ export class TaskCreate extends OpenAPIRoute {
       },
       '400': {
         description: 'バリデーションエラー',
+        content: {
+          'application/json': {
+            schema: z.object({
+              success: z.boolean(),
+              error: z.string(),
+            }),
+          },
+        },
+      },
+      '404': {
+        description: 'TODOが見つからない',
         content: {
           'application/json': {
             schema: z.object({
@@ -72,31 +89,39 @@ export class TaskCreate extends OpenAPIRoute {
     try {
       // バリデーション済みデータの取得
       const data = await this.getValidatedData<typeof this.schema>();
-      const todoData = data.body;
+      const { taskSlug } = data.params;
+      const updateData = data.body;
       const { userId } = data.query;
 
       // データベース接続とサービス初期化
       const db = getDatabase(c);
       const todoService = new TodoService(db);
 
-      // TODO作成（型変換）
-      const createData = {
-        title: todoData.title,
-        description: todoData.description,
-        dueDate: todoData.dueDate,
-        completed: todoData.completed,
-      };
-      const newTodo = await todoService.createTodo(userId, createData);
+      // TODO存在確認（スラッグとIDの両方を試行）
+      let todo = await todoService.getTodoBySlug(userId, taskSlug);
+      if (!todo) {
+        todo = await todoService.getTodoById(userId, taskSlug);
+      }
 
-      return c.json(
-        {
-          success: true,
-          data: newTodo,
-        },
-        201
-      );
+      if (!todo) {
+        return c.json(
+          {
+            success: false,
+            error: 'TODOが見つからないか、アクセス権限がありません。',
+          },
+          404
+        );
+      }
+
+      // TODO更新
+      const updatedTodo = await todoService.updateTodo(userId, todo.id, updateData);
+
+      return c.json({
+        success: true,
+        data: updatedTodo,
+      });
     } catch (error) {
-      console.error('TODO作成エラー:', error);
+      console.error('TODO更新エラー:', error);
 
       // バリデーションエラーの場合
       if (error instanceof z.ZodError) {
@@ -113,8 +138,8 @@ export class TaskCreate extends OpenAPIRoute {
       if (
         error instanceof Error &&
         (error.message.includes('タイトルは必須') ||
-          error.message.includes('期限日は必須') ||
-          error.message.includes('期限日の形式が無効'))
+          error.message.includes('期限日の形式が無効') ||
+          error.message.includes('更新するフィールドを少なくとも1つ指定'))
       ) {
         return c.json(
           {
