@@ -1,7 +1,7 @@
 /**
  * TODO削除エンドポイント
  *
- * TODOを論理削除する（完全削除ではなく、deleted_atを設定）。
+ * 認証済みユーザーのTODOを論理削除する（完全削除ではなく、deleted_atを設定）。
  * ユーザー認証とアクセス権限をチェック。
  */
 import { OpenAPIRoute, Str } from 'chanfana';
@@ -9,24 +9,20 @@ import { z } from 'zod';
 import { type AppContext } from '../types';
 import { getDatabase } from '../database/connection';
 import { TodoService } from '../services/todoService';
+import { authMiddleware } from '../middleware/auth';
 
 export class TaskDelete extends OpenAPIRoute {
   schema = {
     tags: ['Todos'],
     summary: 'TODO削除',
-    description: 'TODOを論理削除します（完全削除ではありません）。復元が可能です。',
+    description:
+      '認証済みユーザーのTODOを論理削除します（完全削除ではありません）。復元が可能です。',
+    security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
         taskSlug: Str({
           description: 'TODOスラッグまたはID',
           example: 'clean-room',
-        }),
-      }),
-      query: z.object({
-        // 固定ユーザーID（認証実装まで）
-        userId: Str({
-          description: 'ユーザーID（認証実装まで暫定）',
-          default: 'fixed-user-id',
         }),
       }),
     },
@@ -68,59 +64,80 @@ export class TaskDelete extends OpenAPIRoute {
   };
 
   async handle(c: AppContext): Promise<Response> {
-    try {
-      // バリデーション済みデータの取得
-      const data = await this.getValidatedData<typeof this.schema>();
-      const { taskSlug } = data.params;
-      const { userId } = data.query;
+    // 認証ミドルウェアを実行
+    return new Promise(resolve => {
+      authMiddleware(c, async () => {
+        try {
+          // 認証済みユーザーIDを取得
+          const userId = c.get('userId');
+          if (!userId) {
+            resolve(c.json({ success: false, error: '認証が必要です。' }, 401));
+            return;
+          }
 
-      // データベース接続とサービス初期化
-      const db = getDatabase(c);
-      const todoService = new TodoService(db);
+          // バリデーション済みデータの取得
+          const data = await this.getValidatedData<typeof this.schema>();
+          const { taskSlug } = data.params;
 
-      // TODO存在確認（スラッグとIDの両方を試行）
-      let todo = await todoService.getTodoBySlug(userId, taskSlug);
-      if (!todo) {
-        todo = await todoService.getTodoById(userId, taskSlug);
-      }
+          // データベース接続とサービス初期化
+          const db = getDatabase(c);
+          const todoService = new TodoService(db);
 
-      if (!todo) {
-        return c.json(
-          {
-            success: false,
-            error: 'TODOが見つからないか、アクセス権限がありません。',
-          },
-          404
-        );
-      }
+          // TODO存在確認（スラッグとIDの両方を試行）
+          let todo = await todoService.getTodoBySlug(userId, taskSlug);
+          if (!todo) {
+            todo = await todoService.getTodoById(userId, taskSlug);
+          }
 
-      // TODO削除（論理削除）
-      const deleteResult = await todoService.deleteTodo(userId, todo.id);
+          if (!todo) {
+            resolve(
+              c.json(
+                {
+                  success: false,
+                  error: 'TODOが見つからないか、アクセス権限がありません。',
+                },
+                404
+              )
+            );
+            return;
+          }
 
-      if (deleteResult) {
-        return c.json({
-          success: true,
-          message: 'TODOを削除しました。復元が必要な場合は復元機能をご利用ください。',
-        });
-      } else {
-        return c.json(
-          {
-            success: false,
-            error: 'TODO削除に失敗しました。',
-          },
-          500
-        );
-      }
-    } catch (error) {
-      console.error('TODO削除エラー:', error);
+          // TODO削除（論理削除）
+          const deleteResult = await todoService.deleteTodo(userId, todo.id);
 
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : '予期しないエラーが発生しました',
-        },
-        500
-      );
-    }
+          if (deleteResult) {
+            resolve(
+              c.json({
+                success: true,
+                message: 'TODOを削除しました。復元が必要な場合は復元機能をご利用ください。',
+              })
+            );
+          } else {
+            resolve(
+              c.json(
+                {
+                  success: false,
+                  error: 'TODO削除に失敗しました。',
+                },
+                500
+              )
+            );
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('TODO削除エラー:', error);
+
+          resolve(
+            c.json(
+              {
+                success: false,
+                error: error instanceof Error ? error.message : '予期しないエラーが発生しました',
+              },
+              500
+            )
+          );
+        }
+      });
+    });
   }
 }

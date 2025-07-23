@@ -7,10 +7,14 @@
 import { OpenAPIRoute, Str } from 'chanfana';
 import { z } from 'zod';
 import type { AppContext } from '../types';
-import { authMiddleware } from '../middleware/auth';
 import { UserService } from '../services/userService';
 import { getDatabase } from '../database/connection';
-import { initializeFirebaseAuth, extractTokenFromHeader, normalizeAuthError, isFirebaseAuthError } from '../utils/auth';
+import {
+  initializeFirebaseAuth,
+  extractTokenFromHeader,
+  normalizeAuthError,
+  isFirebaseAuthError,
+} from '../utils/auth';
 
 /**
  * JWT検証リクエストスキーマ
@@ -26,13 +30,15 @@ const VerifyTokenSchema = z.object({
 const AuthResponseSchema = z.object({
   success: z.boolean(),
   message: z.string().optional(),
-  user: z.object({
-    id: z.string(),
-    email: z.string(),
-    displayName: z.string().optional(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-  }).optional(),
+  user: z
+    .object({
+      id: z.string(),
+      email: z.string(),
+      displayName: z.string().optional(),
+      createdAt: z.string(),
+      updatedAt: z.string(),
+    })
+    .optional(),
   error: z.string().optional(),
 });
 
@@ -84,7 +90,7 @@ export class VerifyAuth extends OpenAPIRoute {
     },
   };
 
-  async handle(c: AppContext) {
+  async handle(c: AppContext): Promise<Response> {
     try {
       // リクエストボディを取得・検証
       const data = await this.getValidatedData<typeof this.schema>();
@@ -97,18 +103,24 @@ export class VerifyAuth extends OpenAPIRoute {
       const decodedToken = await auth.verifyIdToken(idToken);
 
       if (!decodedToken) {
-        return c.json({
-          success: false,
-          error: '無効な認証トークンです。',
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error: '無効な認証トークンです。',
+          },
+          401
+        );
       }
 
       // 必須フィールドの検証
       if (!decodedToken.sub || !decodedToken.email) {
-        return c.json({
-          success: false,
-          error: '認証トークンに必要な情報が含まれていません。',
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error: '認証トークンに必要な情報が含まれていません。',
+          },
+          401
+        );
       }
 
       // データベース接続とユーザーサービス初期化
@@ -133,24 +145,30 @@ export class VerifyAuth extends OpenAPIRoute {
           updatedAt: user.updatedAt || '',
         },
       });
-
     } catch (error) {
       // エラーログ出力（本番環境では適切なロガーを使用）
+      // eslint-disable-next-line no-console
       console.error('認証検証エラー:', error);
 
       // Firebase認証エラーの場合は適切なメッセージを返す
       if (isFirebaseAuthError(error)) {
-        return c.json({
-          success: false,
-          error: normalizeAuthError(error),
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error: normalizeAuthError(error),
+          },
+          401
+        );
       }
 
       // その他のサーバーエラー
-      return c.json({
-        success: false,
-        error: '認証処理中にエラーが発生しました。',
-      }, 500);
+      return c.json(
+        {
+          success: false,
+          error: '認証処理中にエラーが発生しました。',
+        },
+        500
+      );
     }
   }
 }
@@ -195,17 +213,21 @@ export class GetCurrentUser extends OpenAPIRoute {
     },
   };
 
-  async handle(c: AppContext) {
+  async handle(c: AppContext): Promise<Response> {
     try {
       // Authorization headerからJWTトークンを取得
       const authHeader = c.req.header('Authorization');
       const token = extractTokenFromHeader(authHeader);
 
       if (!token) {
-        return c.json({
-          success: false,
-          error: '認証トークンが必要です。Authorization headerに "Bearer <token>" 形式で指定してください。'
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error:
+              '認証トークンが必要です。Authorization headerに "Bearer <token>" 形式で指定してください。',
+          },
+          401
+        );
       }
 
       // Firebase Authインスタンスを初期化
@@ -215,10 +237,13 @@ export class GetCurrentUser extends OpenAPIRoute {
       const decodedToken = await auth.verifyIdToken(token);
 
       if (!decodedToken || !decodedToken.sub || !decodedToken.email) {
-        return c.json({
-          success: false,
-          error: '無効な認証トークンです。',
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error: '無効な認証トークンです。',
+          },
+          401
+        );
       }
 
       // データベースから最新のユーザー情報を取得
@@ -227,10 +252,13 @@ export class GetCurrentUser extends OpenAPIRoute {
       const user = await userService.getUserById(decodedToken.sub);
 
       if (!user) {
-        return c.json({
-          success: false,
-          error: 'ユーザー情報が見つかりません。',
-        }, 404);
+        return c.json(
+          {
+            success: false,
+            error: 'ユーザー情報が見つかりません。',
+          },
+          404
+        );
       }
 
       return c.json({
@@ -244,24 +272,29 @@ export class GetCurrentUser extends OpenAPIRoute {
           updatedAt: user.updatedAt || '',
         },
       });
-
     } catch (error) {
       // エラーログ出力
+      // eslint-disable-next-line no-console
       console.error('ユーザー情報取得エラー:', error);
 
       // Firebase認証エラーの場合は適切なメッセージを返す
       if (isFirebaseAuthError(error)) {
-        return c.json({
-          success: false,
-          error: normalizeAuthError(error),
-        }, 401);
+        return c.json(
+          {
+            success: false,
+            error: normalizeAuthError(error),
+          },
+          401
+        );
       }
 
-      return c.json({
-        success: false,
-        error: 'ユーザー情報の取得中にエラーが発生しました。',
-      }, 500);
+      return c.json(
+        {
+          success: false,
+          error: 'ユーザー情報の取得中にエラーが発生しました。',
+        },
+        500
+      );
     }
   }
 }
-

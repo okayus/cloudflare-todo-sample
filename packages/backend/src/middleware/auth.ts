@@ -5,8 +5,13 @@
  * 保護されたAPIエンドポイントで使用される。
  */
 import type { MiddlewareHandler } from 'hono';
-import type { AppContext } from '../types';
-import { initializeFirebaseAuth, extractTokenFromHeader, normalizeAuthError, isFirebaseAuthError } from '../utils/auth';
+import type { Env } from '../types';
+import {
+  initializeFirebaseAuth,
+  extractTokenFromHeader,
+  normalizeAuthError,
+  isFirebaseAuthError,
+} from '../utils/auth';
 
 /**
  * 認証済みユーザー情報をコンテキストに追加する型拡張
@@ -18,7 +23,7 @@ declare module 'hono' {
     /** 認証済みユーザーのメールアドレス */
     userEmail: string;
     /** Firebase ID tokenのクレーム情報 */
-    firebaseToken: any;
+    firebaseToken: unknown;
   }
 }
 
@@ -31,7 +36,7 @@ declare module 'hono' {
  *
  * @returns Honoミドルウェア関数
  */
-export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, next) => {
+export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   try {
     // Authorization headerからJWTトークンを取得
     const authHeader = c.req.header('Authorization');
@@ -41,7 +46,8 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
       return c.json(
         {
           success: false,
-          error: '認証トークンが必要です。Authorization headerに "Bearer <token>" 形式で指定してください。'
+          error:
+            '認証トークンが必要です。Authorization headerに "Bearer <token>" 形式で指定してください。',
         },
         401
       );
@@ -51,13 +57,13 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
     const auth = initializeFirebaseAuth(c.env);
 
     // JWT ID tokenを検証
-    const decodedToken = await auth.verifyIdToken(token, c.env);
+    const decodedToken = await auth.verifyIdToken(token);
 
     if (!decodedToken) {
       return c.json(
         {
           success: false,
-          error: '無効な認証トークンです。'
+          error: '無効な認証トークンです。',
         },
         401
       );
@@ -68,7 +74,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
       return c.json(
         {
           success: false,
-          error: '認証トークンに必要な情報が含まれていません。'
+          error: '認証トークンに必要な情報が含まれていません。',
         },
         401
       );
@@ -83,6 +89,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
     await next();
   } catch (error) {
     // エラーログ出力（本番環境では適切なロガーを使用）
+    // eslint-disable-next-line no-console
     console.error('認証ミドルウェアエラー:', error);
 
     // Firebase認証エラーの場合は適切なメッセージを返す
@@ -90,7 +97,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
       return c.json(
         {
           success: false,
-          error: normalizeAuthError(error)
+          error: normalizeAuthError(error),
         },
         401
       );
@@ -100,7 +107,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
     return c.json(
       {
         success: false,
-        error: '認証処理中にエラーが発生しました。'
+        error: '認証処理中にエラーが発生しました。',
       },
       500
     );
@@ -115,7 +122,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, ne
  *
  * @returns Honoミドルウェア関数
  */
-export const optionalAuthMiddleware: MiddlewareHandler<{ Bindings: any }> = async (c, next) => {
+export const optionalAuthMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   try {
     const authHeader = c.req.header('Authorization');
     const token = extractTokenFromHeader(authHeader);
@@ -128,7 +135,7 @@ export const optionalAuthMiddleware: MiddlewareHandler<{ Bindings: any }> = asyn
 
     // トークンがある場合は検証を試行
     const auth = initializeFirebaseAuth(c.env);
-    const decodedToken = await auth.verifyIdToken(token, c.env);
+    const decodedToken = await auth.verifyIdToken(token);
 
     if (decodedToken && decodedToken.sub && decodedToken.email) {
       // 認証成功時はユーザー情報を設定
@@ -140,6 +147,7 @@ export const optionalAuthMiddleware: MiddlewareHandler<{ Bindings: any }> = asyn
     await next();
   } catch (error) {
     // 認証オプショナルの場合はエラーでも続行
+    // eslint-disable-next-line no-console
     console.warn('オプショナル認証ミドルウェア警告:', error);
     await next();
   }

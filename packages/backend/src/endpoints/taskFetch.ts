@@ -1,7 +1,7 @@
 /**
  * TODO取得エンドポイント
  *
- * スラッグまたはIDでTODOを取得する。
+ * 認証済みユーザーのスラッグまたはIDでTODOを取得する。
  * ユーザー認証とアクセス権限をチェック。
  */
 import { OpenAPIRoute, Str } from 'chanfana';
@@ -9,24 +9,19 @@ import { z } from 'zod';
 import { type AppContext, TodoSchema } from '../types';
 import { getDatabase } from '../database/connection';
 import { TodoService } from '../services/todoService';
+import { authMiddleware } from '../middleware/auth';
 
 export class TaskFetch extends OpenAPIRoute {
   schema = {
     tags: ['Todos'],
     summary: 'TODO詳細取得',
-    description: 'スラッグまたはIDでTODOの詳細情報を取得します。',
+    description: '認証済みユーザーのスラッグまたはIDでTODOの詳細情報を取得します。',
+    security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
         taskSlug: Str({
           description: 'TODOスラッグまたはID',
           example: 'clean-room',
-        }),
-      }),
-      query: z.object({
-        // 固定ユーザーID（認証実装まで）
-        userId: Str({
-          description: 'ユーザーID（認証実装まで暫定）',
-          default: 'fixed-user-id',
         }),
       }),
     },
@@ -68,49 +63,68 @@ export class TaskFetch extends OpenAPIRoute {
   };
 
   async handle(c: AppContext): Promise<Response> {
-    try {
-      // バリデーション済みデータの取得
-      const data = await this.getValidatedData<typeof this.schema>();
-      const { taskSlug } = data.params;
-      const { userId } = data.query;
+    // 認証ミドルウェアを実行
+    return new Promise(resolve => {
+      authMiddleware(c, async () => {
+        try {
+          // 認証済みユーザーIDを取得
+          const userId = c.get('userId');
+          if (!userId) {
+            resolve(c.json({ success: false, error: '認証が必要です。' }, 401));
+            return;
+          }
 
-      // データベース接続とサービス初期化
-      const db = getDatabase(c);
-      const todoService = new TodoService(db);
+          // バリデーション済みデータの取得
+          const data = await this.getValidatedData<typeof this.schema>();
+          const { taskSlug } = data.params;
 
-      // TODO取得（スラッグとIDの両方を試行）
-      let todo = await todoService.getTodoBySlug(userId, taskSlug);
+          // データベース接続とサービス初期化
+          const db = getDatabase(c);
+          const todoService = new TodoService(db);
 
-      // スラッグで見つからない場合、IDとして検索
-      if (!todo) {
-        todo = await todoService.getTodoById(userId, taskSlug);
-      }
+          // TODO取得（スラッグとIDの両方を試行）
+          let todo = await todoService.getTodoBySlug(userId, taskSlug);
 
-      // TODOが見つからない場合
-      if (!todo) {
-        return c.json(
-          {
-            success: false,
-            error: 'TODOが見つからないか、アクセス権限がありません。',
-          },
-          404
-        );
-      }
+          // スラッグで見つからない場合、IDとして検索
+          if (!todo) {
+            todo = await todoService.getTodoById(userId, taskSlug);
+          }
 
-      return c.json({
-        success: true,
-        data: todo,
+          // TODOが見つからない場合
+          if (!todo) {
+            resolve(
+              c.json(
+                {
+                  success: false,
+                  error: 'TODOが見つからないか、アクセス権限がありません。',
+                },
+                404
+              )
+            );
+            return;
+          }
+
+          resolve(
+            c.json({
+              success: true,
+              data: todo,
+            })
+          );
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('TODO取得エラー:', error);
+
+          resolve(
+            c.json(
+              {
+                success: false,
+                error: error instanceof Error ? error.message : '予期しないエラーが発生しました',
+              },
+              500
+            )
+          );
+        }
       });
-    } catch (error) {
-      console.error('TODO取得エラー:', error);
-
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : '予期しないエラーが発生しました',
-        },
-        500
-      );
-    }
+    });
   }
 }

@@ -19,10 +19,7 @@ import type { Env } from '../types';
 export function initializeFirebaseAuth(env: Env): Auth {
   // KVストレージを使用したキーストア初期化
   // JWT公開鍵をキャッシュして検証性能を向上させる
-  const keyStore = WorkersKVStoreSingle.getOrInitialize(
-    env.PUBLIC_JWK_CACHE_KEY,
-    env.JWT_CACHE
-  );
+  const keyStore = WorkersKVStoreSingle.getOrInitialize(env.PUBLIC_JWK_CACHE_KEY, env.JWT_CACHE);
 
   // Firebase Authインスタンスを初期化
   // Singletonパターンで同一インスタンスを再利用
@@ -90,20 +87,20 @@ export function isFirebaseAuthError(error: unknown): boolean {
 export function normalizeAuthError(error: unknown): string {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('expired')) {
       return 'トークンの有効期限が切れています。再度ログインしてください。';
     }
-    
+
     if (message.includes('invalid') || message.includes('malformed')) {
       return '無効なトークンです。';
     }
-    
+
     if (message.includes('missing') || message.includes('required')) {
       return '認証トークンが必要です。';
     }
   }
-  
+
   // デフォルトのエラーメッセージ
   return '認証に失敗しました。';
 }
