@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1753228291357,
+      "tag": "0000_square_killraven",
+      "breakpoints": true
+    }
+  ]
+}
