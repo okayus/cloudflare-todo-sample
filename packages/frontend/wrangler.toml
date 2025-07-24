@@ -1,0 +1,11 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "cloudflare-todo-sample-frontend"
+compatibility_date = "2024-07-24"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages configuration
+[env.production]
+name = "cloudflare-todo-sample-frontend"
+
+[env.staging]
+name = "cloudflare-todo-sample-frontend-staging"
