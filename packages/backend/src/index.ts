@@ -13,6 +13,7 @@ import { TaskDelete } from './endpoints/taskDelete';
 import { TaskFetch } from './endpoints/taskFetch';
 import { TaskList } from './endpoints/taskList';
 import { TaskUpdate } from './endpoints/taskUpdate';
+import { VerifyAuth, GetCurrentUser } from './routes/auth';
 import { type Env } from './types';
 
 // Honoアプリケーションの初期化
@@ -34,6 +35,10 @@ app.use(
 const openapi = fromHono(app, {
   docs_url: '/',
 });
+
+// 認証エンドポイントの登録
+openapi.post('/api/auth/verify', VerifyAuth);
+openapi.get('/api/auth/me', GetCurrentUser);
 
 // TODOエンドポイントの登録
 openapi.get('/api/todos', TaskList);
