@@ -10,9 +10,9 @@ TDD（テスト駆動開発）とOpenAPIスキーマ駆動開発を実践し、�
 - [x] **Phase 1**: プロジェクト基盤整備 ✅
 - [x] **Phase 1.5**: Cloudflareリソース設定 ✅
 - [x] **Phase 2**: CIパイプライン構築 ✅ **CDパイプラインは未実装**
-- [x] **Phase 3**: データベース実装・CRUD操作 ✅ **認証統合は未実装**
-- [ ] **Phase 3.2**: Firebase Authentication統合 🔄 **【次期実装】**
-- [ ] **Phase 4**: 共通パッケージ・フロントエンド実装  
+- [x] **Phase 3**: データベース実装・CRUD操作 ✅
+- [x] **Phase 3.2**: Firebase Authentication統合 ✅ **【完了】**
+- [ ] **Phase 4**: 共通パッケージ・フロントエンド実装 🔄 **【次期実装】**
 - [ ] **Phase 5**: デプロイ・運用
 
 ## ⚠️ 実装順序変更について
@@ -173,28 +173,36 @@ packages/backend/src/
 - [x] ページネーション実装
 - [x] 包括的テストスイート作成（38テストケース）
 
-### 🔄 3.2 Firebase Authentication統合 【次期実装】
-- [ ] Firebase JWT検証ライブラリ選定・追加
-- [ ] JWT検証ミドルウェア実装
-- [ ] 認証エンドポイント追加（`POST /api/auth/verify`）
-- [ ] userIdパラメータを認証統合に置換
+### ✅ 3.2 Firebase Authentication統合 【完了】
+- [x] Firebase JWT検証ライブラリ選定・追加（firebase-auth-cloudflare-workers）
+- [x] JWT検証ミドルウェア実装（authMiddleware, optionalAuthMiddleware）
+- [x] 認証ヘルパー関数実装（JWT抽出、エラー正規化、Auth初期化）
+- [x] 認証エンドポイント追加（`POST /api/auth/verify`, `GET /api/auth/me`）
+- [x] 既存エンドポイントの認証統合（userIdパラメータ除去、Bearer認証）
+- [x] 包括的テストスイート作成（70テスト追加、計110テスト）
+- [x] OpenAPI仕様書更新（Bearer認証スキーマ、セキュリティ定義）
+- [x] CORS設定更新（Authorization headerサポート）
 
 **実装済みエンドポイント:** ✅
-1. `GET /api/todos` - タスク一覧取得（フィルタ・ソート・ページネーション）✅
-2. `POST /api/todos` - タスク作成 ✅
-3. `GET /api/todos/:slug` - タスク詳細取得 ✅
-4. `PUT /api/todos/:slug` - タスク更新 ✅
-5. `DELETE /api/todos/:slug` - タスク削除（論理削除）✅
-
-**未実装エンドポイント:** 🔄
-6. `POST /api/auth/verify` - 認証確認・ユーザー情報取得
+1. `GET /api/todos` - タスク一覧取得（フィルタ・ソート・ページネーション・認証）✅
+2. `POST /api/todos` - タスク作成（認証）✅
+3. `GET /api/todos/:slug` - タスク詳細取得（認証）✅
+4. `PUT /api/todos/:slug` - タスク更新（認証）✅
+5. `DELETE /api/todos/:slug` - タスク削除（論理削除・認証）✅
+6. `POST /api/auth/verify` - Firebase ID Token検証・ユーザー同期 ✅
+7. `GET /api/auth/me` - 認証済みユーザー情報取得 ✅
 
 **実装された追加機能:**
 - 論理削除されたTODOの復元機能
-- ユーザーごとのデータ分離
+- ユーザーごとのデータ分離（認証統合）
 - URL用スラッグ生成（日本語対応）
 - 包括的エラーハンドリング
 - 型安全なデータベース操作
+- Firebase Authentication統合（JWT検証）
+- 認証ミドルウェア（必須・オプショナル）
+- Bearer認証スキーマ（OpenAPI準拠）
+- JWT公開鍵キャッシュ（Cloudflare KV活用）
+- 統一エラーメッセージ（セキュリティ考慮）
 
 ## 📅 Phase 4: 共通パッケージ・フロントエンド実装
 
@@ -288,10 +296,10 @@ npx tailwindcss init -p
 ## 📊 進捗管理
 
 ### マイルストーン（更新版）
-- **Week 1**: Phase 1, 1.5, 2(CI), 3(DB) 完了（基盤・CI・データベース）✅
-- **Week 2**: Phase 3.2 完了（Firebase認証統合）+ Phase 2(CD) 完了
-- **Week 3**: Phase 4 完了（共通パッケージ・フロントエンド実装）
-- **Week 4**: Phase 5 完了（デプロイ・運用）
+- **Week 1**: Phase 1, 1.5, 2(CI), 3(DB), 3.2(Auth) 完了（基盤・CI・データベース・認証）✅
+- **Week 2**: Phase 4 完了（共通パッケージ・フロントエンド実装） + Phase 2(CD) 完了
+- **Week 3**: Phase 5 完了（デプロイ・運用）
+- **Week 4**: 追加機能・改善
 
 ### 実装フォーカス変更履歴
 - **2025-07-22**: CI/CDパイプライン構築を優先実装に変更
@@ -300,6 +308,9 @@ npx tailwindcss init -p
 - **2025-07-23**: データベース実装フェーズ完了
   - **成果**: 完全なCRUD操作、テスト38件、型安全な実装
   - **次期**: Firebase Authentication統合に焦点
+- **2025-07-24**: Firebase Authentication統合フェーズ完了
+  - **成果**: 完全な認証システム、テスト70件追加（計110件）、型安全な実装
+  - **次期**: 共通パッケージ・フロントエンド実装に焦点
 
 ### チェックリスト更新ルール
 - 作業開始時: 該当項目を「🔄 進行中」に変更
@@ -308,15 +319,16 @@ npx tailwindcss init -p
 
 ---
 
-**最終更新**: 2025年7月23日  
-**次回更新予定**: Phase 3.2（Firebase認証統合）完了時  
-**現在フェーズ**: Phase 3.2 - Firebase Authentication統合 🔄
+**最終更新**: 2025年7月24日  
+**次回更新予定**: Phase 4（共通パッケージ・フロントエンド実装）開始時  
+**現在フェーズ**: Phase 4 - 共通パッケージ・フロントエンド実装 🔄
 
-**Phase 3データベース実装の成果:**
-- ✅ 7段階の段階的実装（設計書→スキーマ→サービス→エンドポイント→テスト）
-- ✅ 完全なCRUD API（フィルタ・ソート・ページネーション対応）
-- ✅ 38テストケース（100%パス、型安全性確保）
-- ✅ 初学者向けQ&A教育ドキュメント（1600行超）
-- ✅ 3層アーキテクチャ（エンドポイント・サービス・データベース）
-- ✅ エラーハンドリング分離（ビジネスロジック vs データベース）
-- ✅ コミット履歴による実装フローの記録
+**Phase 3.2 Firebase Authentication統合の成果:**
+- ✅ 6段階の段階的実装（依存関係→ミドルウェア→エンドポイント→統合→テスト→フロントエンド準備）
+- ✅ 完全な認証システム（JWT検証、ユーザー同期、セッション管理）
+- ✅ 70テストケース追加（計110テスト、100%パス、型安全性確保）
+- ✅ 認証ミドルウェア（必須認証・オプショナル認証）
+- ✅ 認証ヘルパー関数（JWT抽出、エラー正規化、Auth初期化）
+- ✅ Bearer認証対応（OpenAPI、CORS、エンドポイント統合）
+- ✅ Firebase Authライブラリ統合（Cloudflare Workers最適化）
+- ✅ 初学者向けQ&A教育ドキュメント追加（725行）
