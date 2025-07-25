@@ -18,7 +18,7 @@
  */
 function Landing() {
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
+    <div data-testid="landing-page" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
       <header style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <h1>🌟 Cloudflare Todo Sample</h1>
         <p style={{ fontSize: '1.2rem', color: '#666' }}>

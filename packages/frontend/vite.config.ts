@@ -6,5 +6,11 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    globals: true,
+  },
+  define: {
+    // Firebase needs this for proper initialization
+    global: 'globalThis',
   },
 })

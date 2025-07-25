@@ -1,22 +1,34 @@
 /**
  * メインアプリケーションコンポーネント
  * 
- * 最低限の静的ページのみ実装。
- * Landing Page のコンテンツを表示する。
+ * Firebase認証とReact Routerを統合したSPAアプリケーション。
+ * 認証状態に基づく条件付きルーティングを提供。
  */
-import Landing from './components/Landing'
+import { FC } from 'react'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { AppRouter } from './components/AppRouter'
 
 /**
  * メインアプリケーション
  * 
- * Phase 4では最低限実装のため、
- * ルーティングは次のフェーズで実装予定。
+ * 認証プロバイダーとルーターを組み合わせて、
+ * 完全な認証機能付きSPAを構築。
+ * 
+ * 構成:
+ * - AuthProvider: Firebase認証状態の管理
+ * - BrowserRouter: HTML5 History APIを使用したルーティング
+ * - AppRouter: アプリケーション固有のルーティング設定
  */
-function App() {
+function App(): JSX.Element {
   return (
-    <div className="App">
-      <Landing />
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="App">
+          <AppRouter />
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
