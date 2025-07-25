@@ -161,8 +161,20 @@ jobs:
       - name: 📦 Install Wrangler
         run: pnpm add -g wrangler
 
+      - name: 🔍 Verify Pages Project
+        run: |
+          if ! wrangler pages project list | grep -q "cloudflare-todo-sample-frontend"; then
+            echo "Creating Pages project..."
+            wrangler pages project create cloudflare-todo-sample-frontend
+          else
+            echo "Pages project already exists"
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: 🚀 Deploy to Cloudflare Pages
-        run: wrangler pages deploy dist --project-name=cloudflare-todo-sample-frontend --compatibility-date=2025-01-20
+        run: wrangler pages deploy dist --project-name=cloudflare-todo-sample-frontend
         working-directory: packages/frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
