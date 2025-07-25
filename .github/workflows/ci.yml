@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [backend]  # TODO: frontend, shared追加予定
+        package: [backend, shared, frontend]
     
     steps:
       - name: 📥 Checkout code
@@ -101,8 +101,8 @@ jobs:
       - name: 🏗️ Build Check
         run: |
           echo "✅ All quality checks passed!"
-          echo "📦 Packages: backend"
-          echo "🎯 Next: frontend, shared packages integration"
+          echo "📦 Packages: backend, shared, frontend"
+          echo "🎯 Ready for deployment pipeline!"
 
   # CI成功通知
   ci-success:
