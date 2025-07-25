@@ -111,12 +111,15 @@ jobs:
           path: packages/shared/dist
           key: shared-build-${{ github.sha }}
 
+      - name: 📦 Install Wrangler
+        run: pnpm add -g wrangler
+
       - name: 🚀 Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: packages/backend
-          command: deploy --env ${{ inputs.environment || 'production' }}
+        run: wrangler deploy --env ${{ inputs.environment || 'production' }}
+        working-directory: packages/backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   # Frontend デプロイ (Cloudflare Pages)
   deploy-frontend:
@@ -155,12 +158,15 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: 📦 Install Wrangler
+        run: pnpm add -g wrangler
+
       - name: 🚀 Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: packages/frontend
-          command: pages deploy dist --project-name=cloudflare-todo-sample-frontend --compatibility-date=2024-07-24
+        run: wrangler pages deploy dist --project-name=cloudflare-todo-sample-frontend --compatibility-date=2025-01-20
+        working-directory: packages/frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   # デプロイ後の健全性チェック
   post-deploy:
