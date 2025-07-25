@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, MemoryRouter } from 'react-router-dom'
 import { User } from 'firebase/auth'
 
 // AuthContextのモック
@@ -24,12 +24,14 @@ vi.mock('../../contexts/AuthContext', () => ({
 }))
 
 // React Routerのモック
-const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    useNavigate: () => mockNavigate,
+    Navigate: vi.fn(({ to, state, replace }) => {
+      // Navigate コンポーネントをモック
+      return <div data-testid="navigate-redirect" data-to={to} data-state={JSON.stringify(state)} data-replace={replace} />
+    }),
   }
 })
 
@@ -57,11 +59,11 @@ describe('ProtectedRoute', () => {
       )
 
       render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={['/dashboard']}>
           <ProtectedRoute>
             <TestProtectedContent />
           </ProtectedRoute>
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       expect(screen.getByTestId('protected-content')).toBeInTheDocument()
@@ -84,11 +86,11 @@ describe('ProtectedRoute', () => {
       )
 
       render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={['/dashboard']}>
           <ProtectedRoute>
             <TestProtectedContent />
           </ProtectedRoute>
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
@@ -114,15 +116,16 @@ describe('ProtectedRoute', () => {
       )
 
       render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={['/dashboard']}>
           <ProtectedRoute>
             <TestProtectedContent />
           </ProtectedRoute>
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       // ログインページにリダイレクトされることを確認
-      expect(mockNavigate).toHaveBeenCalledWith('/login', { replace: true })
+      const redirectElement = screen.getByTestId('navigate-redirect')
+      expect(redirectElement).toHaveAttribute('data-to', '/login')
       expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
     })
 
@@ -136,11 +139,6 @@ describe('ProtectedRoute', () => {
         logout: vi.fn(),
       })
 
-      // 現在のパスをモック
-      Object.defineProperty(window, 'location', {
-        value: { pathname: '/dashboard' },
-        writable: true,
-      })
 
       const { ProtectedRoute } = await import('../ProtectedRoute')
 
@@ -149,18 +147,18 @@ describe('ProtectedRoute', () => {
       )
 
       render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={['/dashboard']}>
           <ProtectedRoute>
             <TestProtectedContent />
           </ProtectedRoute>
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
       // リダイレクト先とstateを確認
-      expect(mockNavigate).toHaveBeenCalledWith('/login', {
-        replace: true,
-        state: { from: '/dashboard' }
-      })
+      const redirectElement = screen.getByTestId('navigate-redirect')
+      expect(redirectElement).toHaveAttribute('data-to', '/login')
+      expect(redirectElement).toHaveAttribute('data-state', JSON.stringify({ from: '/dashboard' }))
+      expect(redirectElement).toHaveAttribute('data-replace', 'true')
     })
   })
 
@@ -214,17 +212,17 @@ describe('ProtectedRoute', () => {
       )
 
       render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={['/']}>
           <ProtectedRoute redirectTo="/custom-login">
             <TestProtectedContent />
           </ProtectedRoute>
-        </BrowserRouter>
+        </MemoryRouter>
       )
 
-      expect(mockNavigate).toHaveBeenCalledWith('/custom-login', {
-        replace: true,
-        state: { from: '/' }
-      })
+      const redirectElement = screen.getByTestId('navigate-redirect')
+      expect(redirectElement).toHaveAttribute('data-to', '/custom-login')
+      expect(redirectElement).toHaveAttribute('data-state', JSON.stringify({ from: '/' }))
+      expect(redirectElement).toHaveAttribute('data-replace', 'true')
     })
   })
 })
