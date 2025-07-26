@@ -9,30 +9,31 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
-// AuthContextのモック
+// 注意：React Router のモック設定は setupTests.ts で統一管理されている
+// AuthContext は実装を使用し、その中で Firebase モックが使用される
+
+// AuthContext のモック関数
 const mockLogin = vi.fn()
 const mockUseAuth = vi.fn()
 
+// AuthContext をモック（統一設定に依存）
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: mockUseAuth,
 }))
 
-// React Routerのモック
-const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ state: null }),
-  }
+// React Router のモック関数取得（setupTests.ts で設定済み）
+let mockNavigate: any
+beforeEach(async () => {
+  const reactRouter = await import('react-router-dom')
+  mockNavigate = reactRouter.useNavigate()
 })
 
 describe('LoginForm', () => {
   const user = userEvent.setup()
 
+  // 統一された beforeEach は setupTests.ts で処理済み
   beforeEach(() => {
-    vi.clearAllMocks()
+    // AuthContext のモック返り値を設定
     mockUseAuth.mockReturnValue({
       user: null,
       isLoading: false,
@@ -173,8 +174,8 @@ describe('LoginForm', () => {
 
 
     it('ログイン処理中はローディング状態が表示される', async () => {
-      let resolveLogin: (value: any) => void
-      const loginPromise = new Promise(resolve => {
+      let resolveLogin: () => void
+      const loginPromise = new Promise<void>(resolve => {
         resolveLogin = resolve
       })
       mockLogin.mockReturnValue(loginPromise)
@@ -201,7 +202,7 @@ describe('LoginForm', () => {
       expect(submitButton).toBeDisabled()
 
       // ログイン完了
-      resolveLogin!({ user: { uid: 'test-user' } })
+      resolveLogin!()
     })
 
     it('ログイン失敗時にエラーメッセージが表示される', async () => {

@@ -32,14 +32,14 @@ interface AuthContextType {
    * @param password パスワード
    * @returns Promise<UserCredential> Firebase認証結果
    */
-  login: (email: string, password: string) => Promise<UserCredential>
+  login: (_email: string, _password: string) => Promise<UserCredential>
   /** 
    * メールアドレスとパスワードでサインアップ
    * @param email メールアドレス  
    * @param password パスワード
    * @returns Promise<UserCredential> Firebase認証結果
    */
-  signup: (email: string, password: string) => Promise<UserCredential>
+  signup: (_email: string, _password: string) => Promise<UserCredential>
   /** 
    * ログアウト
    * @returns Promise<void>
@@ -72,7 +72,7 @@ interface AuthProviderProps {
  * @param props - プロバイダーのプロパティ
  * @returns JSX.Element
  */
-export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
+export function AuthProvider({ children }: AuthProviderProps) {
   /** 現在の認証済みユーザー */
   const [user, setUser] = useState<User | null>(null)
   /** 認証状態確認中のローディング状態 */

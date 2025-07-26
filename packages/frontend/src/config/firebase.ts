@@ -87,18 +87,18 @@ export async function initializeAuth(): Promise<Auth> {
   // Firebase Appが初期化されていることを確認
   await initializeFirebase()
 
-  const auth = getAuth()
+  const authInstance = getAuth()
 
   // 開発環境でのEmulator接続
   if (
     import.meta.env.DEV &&
     import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL &&
-    !auth.emulatorConfig
+    !(authInstance as any).emulatorConfig
   ) {
-    connectAuthEmulator(auth, import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL)
+    connectAuthEmulator(authInstance, import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL)
   }
 
-  return auth
+  return authInstance
 }
 
 /**

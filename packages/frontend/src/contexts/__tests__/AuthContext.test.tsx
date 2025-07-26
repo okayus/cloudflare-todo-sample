@@ -8,7 +8,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, renderHook, act } from '@testing-library/react'
 import { User } from 'firebase/auth'
 
-// Firebase認証関連のモック
+// 注意：Firebase モジュールのモック設定は setupTests.ts で統一管理されている
+// ここでは個別のモック設定は行わず、統一されたモックを使用する
+
+// テスト用のユーザーデータ（setupTests.tsのmockUserと同様）
 const mockUser: Partial<User> = {
   uid: 'test-user-id',
   email: 'test@example.com',
@@ -16,44 +19,11 @@ const mockUser: Partial<User> = {
   emailVerified: true,
 }
 
-const mockSignInWithEmailAndPassword = vi.fn()
-const mockCreateUserWithEmailAndPassword = vi.fn()
-const mockSignOut = vi.fn()
-const mockOnAuthStateChanged = vi.fn()
-const mockGetAuth = vi.fn()
-const mockAuth = { name: 'test-auth-instance' }
-
-// Firebase configのモックを最初に設定
-vi.mock('../config/firebase', () => ({
-  auth: vi.fn().mockResolvedValue(mockAuth), // auth関数として正しくモック
-}))
-
-vi.mock('firebase/app', () => ({
-  initializeApp: vi.fn(() => ({ name: 'test-app' })),
-  getApps: vi.fn(() => []),
-  getApp: vi.fn(),
-}))
-
-vi.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: mockSignInWithEmailAndPassword,
-  createUserWithEmailAndPassword: mockCreateUserWithEmailAndPassword,
-  signOut: mockSignOut,
-  onAuthStateChanged: mockOnAuthStateChanged,
-  getAuth: mockGetAuth,
-  connectAuthEmulator: vi.fn(),
-}))
+// 注意：すべてのモック設定は setupTests.ts で統一管理されている
+// ここでは setupTests.ts の設定に完全依存し、個別のモック設定は行わない
 
 describe('AuthContext', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    // getAuthモックの設定
-    mockGetAuth.mockReturnValue(mockAuth)
-    // デフォルトでは認証リスナーは即座に実行される
-    mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-      callback(null) // 初期状態では未認証
-      return vi.fn() // unsubscribe関数を返す
-    })
-  })
+  // setupTests.ts で統一された beforeEach が自動実行される
 
   describe('AuthProvider', () => {
     it('初期状態では未認証である', async () => {
@@ -84,9 +54,10 @@ describe('AuthContext', () => {
 
     it('認証状態の変更を正しく反映する', async () => {
       const { AuthProvider, useAuth } = await import('../AuthContext')
+      const { onAuthStateChanged } = await import('firebase/auth')
       
       // 認証状態変更をシミュレート
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
         // 最初は未認証
         setTimeout(() => callback(null), 0)
         // 100ms後に認証済みに変更
@@ -119,7 +90,9 @@ describe('AuthContext', () => {
 
   describe('認証メソッド', () => {
     it('ログイン機能が正常に動作する', async () => {
-      mockSignInWithEmailAndPassword.mockResolvedValue({
+      const { signInWithEmailAndPassword } = await import('firebase/auth')
+      
+      vi.mocked(signInWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
         credential: null,
       })
@@ -134,15 +107,17 @@ describe('AuthContext', () => {
         await result.current.login('test@example.com', 'password123')
       })
 
-      expect(mockSignInWithEmailAndPassword).toHaveBeenCalledWith(
-        mockAuth, // auth instance
+      expect(signInWithEmailAndPassword).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'test-auth-instance' }), // auth instance
         'test@example.com',
         'password123'
       )
     })
 
     it('サインアップ機能が正常に動作する', async () => {
-      mockCreateUserWithEmailAndPassword.mockResolvedValue({
+      const { createUserWithEmailAndPassword } = await import('firebase/auth')
+      
+      vi.mocked(createUserWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
         credential: null,
       })
@@ -157,15 +132,17 @@ describe('AuthContext', () => {
         await result.current.signup('test@example.com', 'password123')
       })
 
-      expect(mockCreateUserWithEmailAndPassword).toHaveBeenCalledWith(
-        mockAuth, // auth instance
+      expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'test-auth-instance' }), // auth instance
         'test@example.com',
         'password123'
       )
     })
 
     it('ログアウト機能が正常に動作する', async () => {
-      mockSignOut.mockResolvedValue(undefined)
+      const { signOut } = await import('firebase/auth')
+      
+      vi.mocked(signOut).mockResolvedValue(undefined)
 
       const { AuthProvider, useAuth } = await import('../AuthContext')
       
@@ -177,14 +154,17 @@ describe('AuthContext', () => {
         await result.current.logout()
       })
 
-      expect(mockSignOut).toHaveBeenCalledWith(mockAuth) // auth instance
+      expect(signOut).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'test-auth-instance' }) // auth instance
+      )
     })
   })
 
   describe('エラーハンドリング', () => {
     it('ログイン失敗時にエラーを適切に処理する', async () => {
+      const { signInWithEmailAndPassword } = await import('firebase/auth')
       const error = new Error('Invalid credentials')
-      mockSignInWithEmailAndPassword.mockRejectedValue(error)
+      vi.mocked(signInWithEmailAndPassword).mockRejectedValue(error)
 
       const { AuthProvider, useAuth } = await import('../AuthContext')
       
@@ -222,8 +202,9 @@ describe('AuthContext', () => {
   describe('ローディング状態管理', () => {
     it('認証状態確認中はローディング状態になる', async () => {
       // 認証状態の確認に時間がかかる場合をシミュレート
-      let authCallback: ((user: User | null) => void) | null = null
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      const { onAuthStateChanged } = await import('firebase/auth')
+      let authCallback: any = null
+      vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
         // コールバックを保存するが、すぐには実行しない
         authCallback = callback
         return vi.fn()
@@ -250,7 +231,7 @@ describe('AuthContext', () => {
 
       // 認証状態が確定するとローディング終了
       act(() => {
-        authCallback?.(null)
+        authCallback?.()
       })
 
       await waitFor(() => {

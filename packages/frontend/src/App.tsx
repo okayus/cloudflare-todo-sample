@@ -4,7 +4,6 @@
  * Firebase認証とReact Routerを統合したSPAアプリケーション。
  * 認証状態に基づく条件付きルーティングを提供。
  */
-import { FC } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppRouter } from './components/AppRouter'
@@ -20,7 +19,7 @@ import { AppRouter } from './components/AppRouter'
  * - BrowserRouter: HTML5 History APIを使用したルーティング
  * - AppRouter: アプリケーション固有のルーティング設定
  */
-function App(): JSX.Element {
+function App() {
   return (
     <AuthProvider>
       <BrowserRouter>

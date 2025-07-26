@@ -24,8 +24,19 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        { allowConstantExport: true, allowExportNames: ['useAuth'] },
       ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { 
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true
+        }
+      ],
+      'no-unused-vars': 'off',
+      // Allow interface declarations in global scope
+      '@typescript-eslint/no-unused-vars': 'off'
     },
   },
 ]

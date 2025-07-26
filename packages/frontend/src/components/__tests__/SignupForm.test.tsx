@@ -9,29 +9,30 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
-// AuthContextのモック
+// 注意：React Router と AuthContext のモック設定は setupTests.ts で統一管理
+
+// AuthContext のモック関数
 const mockSignup = vi.fn()
 const mockUseAuth = vi.fn()
 
+// AuthContext をモック（統一設定に依存）
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: mockUseAuth,
 }))
 
-// React Routerのモック
-const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  }
+// React Router のモック関数取得（setupTests.ts で設定済み）
+let mockNavigate: any
+beforeEach(async () => {
+  const reactRouter = await import('react-router-dom')
+  mockNavigate = reactRouter.useNavigate()
 })
 
 describe('SignupForm', () => {
   const user = userEvent.setup()
 
+  // 統一された beforeEach は setupTests.ts で処理済み
   beforeEach(() => {
-    vi.clearAllMocks()
+    // AuthContext のモック返り値を設定
     mockUseAuth.mockReturnValue({
       user: null,
       isLoading: false,
@@ -292,8 +293,8 @@ describe('SignupForm', () => {
     })
 
     it('サインアップ処理中はローディング状態が表示される', async () => {
-      let resolveSignup: (value: any) => void
-      const signupPromise = new Promise(resolve => {
+      let resolveSignup: () => void
+      const signupPromise = new Promise<void>(resolve => {
         resolveSignup = resolve
       })
       mockSignup.mockReturnValue(signupPromise)
@@ -322,7 +323,7 @@ describe('SignupForm', () => {
       expect(submitButton).toBeDisabled()
 
       // サインアップ完了
-      resolveSignup!({ user: { uid: 'test-user' } })
+      resolveSignup!()
     })
 
     it('サインアップ失敗時にエラーメッセージが表示される', async () => {

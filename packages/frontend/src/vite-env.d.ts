@@ -23,6 +23,12 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_AUTH_EMULATOR_URL?: string
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv
+// ImportMeta interface extension for Vite environment variables
+// Export to prevent TS error about unused interface
+export {};
+
+declare global {
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
 }

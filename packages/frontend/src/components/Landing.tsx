@@ -3,12 +3,13 @@
  * 
  * プロジェクト概要と技術スタックを紹介する
  * 最低限の静的ページ実装。
+ * ログイン・サインアップページへのナビゲーションリンクを含む。
  * 
  * 今後の実装予定機能:
- * - Firebase認証UI
  * - Todo管理画面
  * - リアルタイム同期
  */
+import { Link } from 'react-router-dom'
 
 /**
  * ランディングページ
@@ -24,6 +25,44 @@ function Landing() {
         <p style={{ fontSize: '1.2rem', color: '#666' }}>
           学習用TODOアプリケーション - 最新技術スタック実装
         </p>
+        
+        {/* 認証リンクセクション */}
+        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link 
+            to="/login" 
+            style={{ 
+              padding: '0.75rem 1.5rem', 
+              backgroundColor: '#3b82f6', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '8px',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              display: 'inline-block'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+          >
+            🔑 ログイン
+          </Link>
+          <Link 
+            to="/signup" 
+            style={{ 
+              padding: '0.75rem 1.5rem', 
+              backgroundColor: '#10b981', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '8px',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              display: 'inline-block'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+          >
+            ✨ サインアップ
+          </Link>
+        </div>
       </header>
 
       <main>
@@ -86,7 +125,7 @@ function Landing() {
         <section>
           <h2>🚧 今後の実装予定</h2>
           <ul>
-            <li>🔄 認証UI (ログイン・サインアップ)</li>
+            <li>✅ 認証UI (ログイン・サインアップ)</li>
             <li>🔄 Todo管理画面 (作成・編集・削除)</li>
             <li>🔄 リアルタイム同期</li>
             <li>🔄 レスポンシブデザイン強化</li>
