@@ -96,11 +96,11 @@ export function captureConsoleOutput() {
   const errors: string[] = []
   const warnings: string[] = []
 
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     errors.push(args.join(' '))
   }
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     warnings.push(args.join(' '))
   }
 

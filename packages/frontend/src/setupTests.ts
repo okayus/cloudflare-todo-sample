@@ -114,7 +114,20 @@ vi.mock('react-router-dom', async () => {
 const mockAuthInstance = { 
   name: 'test-auth-instance', 
   emulatorConfig: null,
-  currentUser: null
+  currentUser: null,
+  app: { name: 'test-app' },
+  config: {},
+  setPersistence: vi.fn(),
+  languageCode: 'en',
+  tenantId: null,
+  updateCurrentUser: vi.fn(),
+  signOut: vi.fn(),
+  useDeviceLanguage: vi.fn(),
+  onAuthStateChanged: vi.fn(),
+  onIdTokenChanged: vi.fn(),
+  beforeAuthStateChanged: vi.fn(),
+  settings: { appVerificationDisabledForTesting: false },
+  authStateReady: vi.fn().mockResolvedValue(void 0)
 }
 
 /**
@@ -125,7 +138,7 @@ const mockAuthInstance = {
  */
 vi.mock('./config/firebase', async (importOriginal) => {
   // 実際の実装を取得して部分モック
-  const actual = await importOriginal()
+  const actual = await importOriginal<typeof import('./config/firebase')>()
   return {
     ...actual,
     // auth関数のみモックし、他は実装を使用。グローバルauth変数があっても、このモックが優先される
@@ -155,14 +168,16 @@ beforeEach(async () => {
   
   // Firebase config の auth 関数モックを再設定して確実に動作させる
   const { auth } = await import('./config/firebase')
-  vi.mocked(auth).mockResolvedValue(mockAuthInstance)
+  vi.mocked(auth).mockResolvedValue(mockAuthInstance as any)
   
   // E2Eテスト用に Firebase Auth モックも再設定
   const { onAuthStateChanged } = await import('firebase/auth')
   vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
     // E2Eテストでも確実にコールバックが実行されるよう、Promise.resolve()を使用
     Promise.resolve().then(() => {
-      callback(null) // デフォルトで未認証
+      if (typeof callback === 'function') {
+        callback(null) // デフォルトで未認証
+      }
     })
     return vi.fn() // unsubscribe
   })

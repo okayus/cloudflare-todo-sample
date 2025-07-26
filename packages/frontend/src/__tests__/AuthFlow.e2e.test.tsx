@@ -7,12 +7,9 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import App from '../App'
 
 describe('認証フロー E2E テスト', () => {
-  const user = userEvent.setup()
-
   beforeEach(() => {
     // 統一されたクリーンアップは setupTests.ts で処理済み
     // E2Eテスト特有のクリーンアップが必要な場合はここに追加

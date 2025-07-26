@@ -119,8 +119,8 @@ export const LoginForm: React.FC = () => {
       // Firebase認証でログイン
       await login(formData.email, formData.password)
 
-      // ログイン成功：リダイレクト先を決定
-      const from = (location.state as any)?.from || '/dashboard'
+      // ログイン成功：リダイレクト先を決定  
+      const from = (location.state as { from?: string })?.from || '/dashboard'
       navigate(from)
     } catch (error) {
       console.error('ログインエラー:', error)

@@ -4,8 +4,7 @@
  * Phase4-2: 正常系統合テスト拡張
  * 全体の認証フローと基本機能の統合テスト
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { User } from 'firebase/auth'
+import { describe, it, expect } from 'vitest'
 import App from '../App'
 
 // 注意：Firebase と React Router のモック設定は setupTests.ts で統一管理されている

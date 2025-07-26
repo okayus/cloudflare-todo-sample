@@ -4,7 +4,7 @@
  * TDD原則に従い、認証状態管理の実装前にテストを作成。
  * ユーザーの認証状態変更とコンテキストの動作を検証する。
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor, renderHook, act } from '@testing-library/react'
 import { User } from 'firebase/auth'
 
@@ -12,11 +12,27 @@ import { User } from 'firebase/auth'
 // ここでは個別のモック設定は行わず、統一されたモックを使用する
 
 // テスト用のユーザーデータ（setupTests.tsのmockUserと同様）
-const mockUser: Partial<User> = {
+const mockUser: User = {
   uid: 'test-user-id',
   email: 'test@example.com',
   displayName: 'Test User',
   emailVerified: true,
+  isAnonymous: false,
+  phoneNumber: null,
+  photoURL: null,
+  providerData: [],
+  refreshToken: 'test-refresh-token',
+  tenantId: null,
+  delete: vi.fn(),
+  getIdToken: vi.fn().mockResolvedValue('test-token'),
+  getIdTokenResult: vi.fn(),
+  reload: vi.fn(),
+  toJSON: vi.fn(),
+  providerId: 'firebase',
+  metadata: {
+    creationTime: 'test-creation-time',
+    lastSignInTime: 'test-signin-time'
+  }
 }
 
 // 注意：すべてのモック設定は setupTests.ts で統一管理されている
@@ -59,9 +75,17 @@ describe('AuthContext', () => {
       // 認証状態変更をシミュレート
       vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
         // 最初は未認証
-        setTimeout(() => callback(null), 0)
+        setTimeout(() => {
+          if (typeof callback === 'function') {
+            callback(null)
+          }
+        }, 0)
         // 100ms後に認証済みに変更
-        setTimeout(() => callback(mockUser as User), 100)
+        setTimeout(() => {
+          if (typeof callback === 'function') {
+            callback(mockUser as User)
+          }
+        }, 100)
         return vi.fn()
       })
 
@@ -94,7 +118,8 @@ describe('AuthContext', () => {
       
       vi.mocked(signInWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
-        credential: null,
+        operationType: 'signIn',
+        providerId: 'password'
       })
 
       const { AuthProvider, useAuth } = await import('../AuthContext')
@@ -119,7 +144,8 @@ describe('AuthContext', () => {
       
       vi.mocked(createUserWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
-        credential: null,
+        operationType: 'signIn',
+        providerId: 'password'
       })
 
       const { AuthProvider, useAuth } = await import('../AuthContext')
@@ -203,10 +229,12 @@ describe('AuthContext', () => {
     it('認証状態確認中はローディング状態になる', async () => {
       // 認証状態の確認に時間がかかる場合をシミュレート
       const { onAuthStateChanged } = await import('firebase/auth')
-      let authCallback: any = null
+      let authCallback: ((user: User | null) => void) | null = null
       vi.mocked(onAuthStateChanged).mockImplementation((_auth, callback) => {
         // コールバックを保存するが、すぐには実行しない
-        authCallback = callback
+        if (typeof callback === 'function') {
+          authCallback = callback
+        }
         return vi.fn()
       })
 
@@ -231,7 +259,7 @@ describe('AuthContext', () => {
 
       // 認証状態が確定するとローディング終了
       act(() => {
-        authCallback?.()
+        authCallback?.(null)
       })
 
       await waitFor(() => {

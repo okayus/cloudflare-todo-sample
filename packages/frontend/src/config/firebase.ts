@@ -93,7 +93,7 @@ export async function initializeAuth(): Promise<Auth> {
   if (
     import.meta.env.DEV &&
     import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL &&
-    !(authInstance as any).emulatorConfig
+    !('emulatorConfig' in authInstance && authInstance.emulatorConfig)
   ) {
     connectAuthEmulator(authInstance, import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL)
   }

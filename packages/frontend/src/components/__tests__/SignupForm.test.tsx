@@ -21,7 +21,7 @@ vi.mock('../../contexts/AuthContext', () => ({
 }))
 
 // React Router のモック関数取得（setupTests.ts で設定済み）
-let mockNavigate: any
+let mockNavigate: ReturnType<typeof import('react-router-dom').useNavigate>
 beforeEach(async () => {
   const reactRouter = await import('react-router-dom')
   mockNavigate = reactRouter.useNavigate()

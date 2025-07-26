@@ -80,7 +80,7 @@ describe('Firebase設定', () => {
       const { initializeFirebase } = await import('../firebase')
 
       // 既存のアプリがあることをシミュレート
-      vi.mocked(getApps).mockReturnValue([{ name: '[DEFAULT]' } as any])
+      vi.mocked(getApps).mockReturnValue([{ name: '[DEFAULT]' } as ReturnType<typeof getApp>])
 
       await initializeFirebase()
 
@@ -115,7 +115,7 @@ describe('Firebase設定', () => {
       vi.mocked(getAuth).mockReturnValue({ 
         name: 'test-auth-instance', 
         emulatorConfig: null // emulator未接続状態
-      } as any)
+      } as ReturnType<typeof getAuth>)
       
       const { initializeAuth } = await import('../firebase')
 
@@ -139,7 +139,7 @@ describe('Firebase設定', () => {
       
       // getAuthの返り値を設定
       const mockAuthInstance = { name: 'test-auth-instance', emulatorConfig: null }
-      vi.mocked(getAuth).mockReturnValue(mockAuthInstance as any)
+      vi.mocked(getAuth).mockReturnValue(mockAuthInstance as ReturnType<typeof getAuth>)
 
       // Firebase初期化
       await initializeFirebase()
