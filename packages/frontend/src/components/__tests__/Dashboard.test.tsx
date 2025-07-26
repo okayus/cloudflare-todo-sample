@@ -56,10 +56,9 @@ describe('Dashboard', () => {
       render(<Dashboard />)
 
       expect(screen.getByText('ユーザー情報')).toBeInTheDocument()
-      expect(screen.getByText('ユーザーID:')).toBeInTheDocument()
-      expect(screen.getByText('メールアドレス:')).toBeInTheDocument()
+      expect(screen.getByText('メール:')).toBeInTheDocument()
       expect(screen.getByText('表示名:')).toBeInTheDocument()
-      expect(screen.getByText('メール認証:')).toBeInTheDocument()
+      expect(screen.getByText('認証状態:')).toBeInTheDocument()
     })
 
     it('フッター情報が表示される', async () => {
