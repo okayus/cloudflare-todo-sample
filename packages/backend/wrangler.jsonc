@@ -48,7 +48,7 @@
 	 */
 	"vars": {
 		"ENVIRONMENT": "development",
-		"FIREBASE_PROJECT_ID": "your-firebase-project-id",
+		"FIREBASE_PROJECT_ID": "cloudflare-todo-sample",
 		"PUBLIC_JWK_CACHE_KEY": "firebase-jwk-cache"
 	},
 	/**
