@@ -14,6 +14,8 @@ import {
 } from '../utils/auth';
 import { getDatabase } from '../database/connection';
 import { UserService } from '../services/userService';
+import type { FirebaseIdToken } from '../types/firebase';
+import { isValidFirebaseIdToken } from '../types/firebase';
 
 /**
  * 認証済みユーザー情報をコンテキストに追加する型拡張
@@ -25,7 +27,7 @@ declare module 'hono' {
     /** 認証済みユーザーのメールアドレス */
     userEmail: string;
     /** Firebase ID tokenのクレーム情報 */
-    firebaseToken: unknown;
+    firebaseToken: FirebaseIdToken;
   }
 }
 
@@ -44,21 +46,21 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     console.log('🔄 authMiddleware: 認証プロセス開始', {
       method: c.req.method,
       url: c.req.url,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Authorization headerからJWTトークンを取得
     const authHeader = c.req.header('Authorization');
     console.log('🔍 authMiddleware: Authorization header確認', {
       headerExists: !!authHeader,
-      headerPreview: authHeader ? authHeader.substring(0, 20) + '...' : null
+      headerPreview: authHeader ? authHeader.substring(0, 20) + '...' : null,
     });
-    
+
     const token = extractTokenFromHeader(authHeader);
     console.log('🔍 authMiddleware: トークン抽出結果', {
       tokenExtracted: !!token,
       tokenLength: token?.length || 0,
-      tokenPreview: token ? token.substring(0, 20) + '...' : null
+      tokenPreview: token ? token.substring(0, 20) + '...' : null,
     });
 
     if (!token) {
@@ -82,8 +84,8 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     const decodedToken = await auth.verifyIdToken(token);
     console.log('🔍 authMiddleware: JWT検証結果', {
       tokenValid: !!decodedToken,
-      hasSubject: !!(decodedToken as any)?.sub,
-      hasEmail: !!(decodedToken as any)?.email
+      hasSubject: !!decodedToken && typeof decodedToken === 'object' && 'sub' in decodedToken,
+      hasEmail: !!decodedToken && typeof decodedToken === 'object' && 'email' in decodedToken,
     });
 
     if (!decodedToken) {
@@ -97,11 +99,11 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
       );
     }
 
-    // 必須フィールドの検証
-    if (!decodedToken.sub || !decodedToken.email) {
+    // 型安全なトークン検証
+    if (!isValidFirebaseIdToken(decodedToken)) {
       console.log('❌ authMiddleware: 必須フィールド不足', {
-        hasSub: !!decodedToken.sub,
-        hasEmail: !!decodedToken.email
+        hasValidStructure: false,
+        tokenType: typeof decodedToken,
       });
       return c.json(
         {
@@ -130,17 +132,17 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
       displayName: user.displayName,
       isNewUser: user.createdAt === user.updatedAt,
       createdAt: user.createdAt,
-      updatedAt: user.updatedAt
+      updatedAt: user.updatedAt,
     });
 
     // 認証済みユーザー情報をコンテキストに設定
     c.set('userId', decodedToken.sub);
     c.set('userEmail', decodedToken.email);
     c.set('firebaseToken', decodedToken);
-    
+
     console.log('✅ authMiddleware: 認証成功、ユーザー情報設定完了', {
       userId: decodedToken.sub,
-      userEmail: decodedToken.email
+      userEmail: decodedToken.email,
     });
 
     // 次のミドルウェア/ハンドラーに処理を渡す
@@ -152,7 +154,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       isFirebaseError: isFirebaseAuthError(error),
-      isUserServiceError: error instanceof Error && error.message.includes('ユーザー')
+      isUserServiceError: error instanceof Error && error.message.includes('ユーザー'),
     });
 
     // Firebase認証エラーの場合は適切なメッセージを返す
@@ -167,11 +169,12 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     }
 
     // ユーザーサービス関連エラー（DB接続、ユーザー作成エラーなど）
-    if (error instanceof Error && (
-      error.message.includes('ユーザー') ||
-      error.message.includes('データベース') ||
-      error.message.includes('D1 database')
-    )) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('ユーザー') ||
+        error.message.includes('データベース') ||
+        error.message.includes('D1 database'))
+    ) {
       console.error('❌ authMiddleware: ユーザーDB処理エラー:', error.message);
       return c.json(
         {

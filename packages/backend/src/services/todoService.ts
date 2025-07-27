@@ -246,7 +246,7 @@ export class TodoService {
         dueDate: todoData.dueDate,
         completed: todoData.completed,
         slug,
-        now
+        now,
       });
 
       const newTodoData: NewTodo = {
@@ -272,7 +272,7 @@ export class TodoService {
         completed: newTodoData.completed,
         createdAt: newTodoData.createdAt,
         updatedAt: newTodoData.updatedAt,
-        deletedAt: newTodoData.deletedAt
+        deletedAt: newTodoData.deletedAt,
       });
 
       // データベースに挿入
@@ -281,7 +281,7 @@ export class TodoService {
       console.log('✅ TodoService.createTodo: データベース挿入成功', {
         insertedCount: result.length,
         insertedId: result[0]?.id,
-        insertedTitle: result[0]?.title
+        insertedTitle: result[0]?.title,
       });
 
       return result[0];
@@ -289,7 +289,7 @@ export class TodoService {
       console.error('❌ TodoService.createTodo: サービスエラー', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        errorType: error?.constructor?.name
+        errorType: error?.constructor?.name,
       });
       throw new Error(`TODO作成エラー: ${handleDatabaseError(error)}`);
     }

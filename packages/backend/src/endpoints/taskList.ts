@@ -102,7 +102,7 @@ export class TaskList extends OpenAPIRoute {
     console.log('🔄 TaskList: ハンドラー開始', {
       method: c.req.method,
       url: c.req.url,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     try {
@@ -116,9 +116,9 @@ export class TaskList extends OpenAPIRoute {
       const userId = c.get('userId');
       console.log('🔍 TaskList: ユーザーID確認', {
         userIdExists: !!userId,
-        userId: userId ? userId.substring(0, 8) + '...' : null
+        userId: userId ? userId.substring(0, 8) + '...' : null,
       });
-      
+
       if (!userId) {
         console.log('❌ TaskList: ユーザーID不在');
         return c.json({ success: false, error: '認証が必要です。' }, 401);
@@ -128,7 +128,7 @@ export class TaskList extends OpenAPIRoute {
       console.log('🔄 TaskList: リクエストデータバリデーション開始');
       const data = await this.getValidatedData<typeof this.schema>();
       console.log('✅ TaskList: バリデーション完了', {
-        queryParams: Object.keys(data.query || {})
+        queryParams: Object.keys(data.query || {}),
       });
 
       const queryParams = data.query;
@@ -156,9 +156,9 @@ export class TaskList extends OpenAPIRoute {
       console.log('🔄 TaskList: TODO一覧取得開始', {
         userId: userId.substring(0, 8) + '...',
         filters,
-        pagination
+        pagination,
       });
-      
+
       const result = await todoService.getTodos(
         userId,
         filters,
@@ -178,8 +178,8 @@ export class TaskList extends OpenAPIRoute {
         resultStructure: {
           hasItems: 'items' in result,
           hasTodos: 'todos' in result,
-          resultType: typeof result
-        }
+          resultType: typeof result,
+        },
       });
 
       // フロントエンド期待形式への変換（todos → items）
@@ -194,28 +194,27 @@ export class TaskList extends OpenAPIRoute {
       console.log('✅ TaskList: レスポンスデータ変換完了', {
         originalTodosCount: result.todos?.length || 0,
         mappedItemsCount: responseData.items?.length || 0,
-        responseKeys: Object.keys(responseData)
+        responseKeys: Object.keys(responseData),
       });
 
       return c.json({
         success: true,
         data: responseData,
       });
-
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('❌ TaskList: TODO一覧取得エラー:', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        isZodError: error instanceof z.ZodError
+        isZodError: error instanceof z.ZodError,
       });
 
       // バリデーションエラーの場合
       if (error instanceof z.ZodError) {
         console.log('❌ TaskList: Zodバリデーションエラー', {
-          errors: error.errors.map(e => ({ path: e.path, message: e.message }))
+          errors: error.errors.map(e => ({ path: e.path, message: e.message })),
         });
-        
+
         return c.json(
           {
             success: false,

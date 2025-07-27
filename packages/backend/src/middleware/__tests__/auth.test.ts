@@ -45,6 +45,19 @@ vi.mock('../../utils/auth', () => ({
   isFirebaseAuthError: mockIsFirebaseAuthError,
 }));
 
+// UserServiceとDB接続をモック
+const mockFindOrCreateUser = vi.fn();
+const mockUserService = { findOrCreateUser: mockFindOrCreateUser };
+const mockGetDatabase = vi.fn(() => ({}));
+
+vi.mock('../../database/connection', () => ({
+  getDatabase: mockGetDatabase,
+}));
+
+vi.mock('../../services/userService', () => ({
+  UserService: vi.fn().mockImplementation(() => mockUserService),
+}));
+
 // テスト後にモジュールをインポート
 const { authMiddleware, optionalAuthMiddleware } = await import('../auth');
 
@@ -102,6 +115,16 @@ describe('認証ミドルウェア', () => {
   beforeEach(() => {
     // 各テスト前にモックをリセット
     vi.clearAllMocks();
+
+    // UserServiceのデフォルトモック設定
+    mockFindOrCreateUser.mockResolvedValue({
+      id: 'user-123',
+      firebaseUid: 'firebase-uid-123',
+      email: 'test@example.com',
+      displayName: null,
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-01T00:00:00.000Z',
+    });
   });
 
   describe('authMiddleware', () => {
@@ -123,6 +146,11 @@ describe('認証ミドルウェア', () => {
         // Assert: 期待する動作の検証
         expect(mockExtractTokenFromHeader).toHaveBeenCalledWith(authHeader);
         expect(mockVerifyIdToken).toHaveBeenCalledWith(validToken);
+        expect(mockFindOrCreateUser).toHaveBeenCalledWith(
+          validDecodedToken.sub,
+          validDecodedToken.email,
+          null
+        );
         expect(next).toHaveBeenCalled();
       });
 
@@ -142,6 +170,11 @@ describe('認証ミドルウェア', () => {
         expect(context.set).toHaveBeenCalledWith('userId', validDecodedToken.sub);
         expect(context.set).toHaveBeenCalledWith('userEmail', validDecodedToken.email);
         expect(context.set).toHaveBeenCalledWith('firebaseToken', validDecodedToken);
+        expect(mockFindOrCreateUser).toHaveBeenCalledWith(
+          validDecodedToken.sub,
+          validDecodedToken.email,
+          null
+        );
       });
 
       it('認証成功後にnext()が呼び出される', async () => {
@@ -158,6 +191,11 @@ describe('認証ミドルウェア', () => {
 
         // Assert
         expect(next).toHaveBeenCalledTimes(1);
+        expect(mockFindOrCreateUser).toHaveBeenCalledWith(
+          validDecodedToken.sub,
+          validDecodedToken.email,
+          null
+        );
       });
 
       it('Firebase UIDとemailが正しく抽出される', async () => {
@@ -183,6 +221,11 @@ describe('認証ミドルウェア', () => {
         // Assert
         expect(context.set).toHaveBeenCalledWith('userId', 'custom-uid-456');
         expect(context.set).toHaveBeenCalledWith('userEmail', 'custom@example.com');
+        expect(mockFindOrCreateUser).toHaveBeenCalledWith(
+          'custom-uid-456',
+          'custom@example.com',
+          null
+        );
       });
     });
 
@@ -361,6 +404,8 @@ describe('認証ミドルウェア', () => {
           401
         );
         expect(next).not.toHaveBeenCalled();
+        // Firebaseエラー時はUserServiceは呼び出されない
+        expect(mockFindOrCreateUser).not.toHaveBeenCalled();
       });
 
       it('サーバーエラーの適切な処理', async () => {
@@ -381,11 +426,13 @@ describe('認証ミドルウェア', () => {
         expect(context.json).toHaveBeenCalledWith(
           {
             success: false,
-            error: '認証処理中にエラーが発生しました。',
+            error: 'ユーザー情報の処理中にエラーが発生しました。',
           },
           500
         );
         expect(next).not.toHaveBeenCalled();
+        // サーバーエラー時はUserServiceは呼び出されない
+        expect(mockFindOrCreateUser).not.toHaveBeenCalled();
       });
 
       it('ネットワークエラーの適切な処理', async () => {
@@ -411,6 +458,8 @@ describe('認証ミドルウェア', () => {
           500
         );
         expect(next).not.toHaveBeenCalled();
+        // ネットワークエラー時はUserServiceは呼び出されない
+        expect(mockFindOrCreateUser).not.toHaveBeenCalled();
       });
     });
   });
@@ -440,6 +489,15 @@ describe('認証ミドルウェア', () => {
 
         mockExtractTokenFromHeader.mockReturnValue(validToken);
         mockVerifyIdToken.mockResolvedValue(validDecodedToken);
+        // optionalAuthMiddleware用のUserServiceモック設定
+        mockFindOrCreateUser.mockResolvedValue({
+          id: 'user-123',
+          firebaseUid: validDecodedToken.sub,
+          email: validDecodedToken.email,
+          displayName: null,
+          createdAt: '2023-01-01T00:00:00.000Z',
+          updatedAt: '2023-01-01T00:00:00.000Z',
+        });
 
         // Act
         await optionalAuthMiddleware(context as unknown as Context<{ Bindings: Env }>, next);
@@ -448,6 +506,8 @@ describe('認証ミドルウェア', () => {
         expect(context.set).toHaveBeenCalledWith('userId', validDecodedToken.sub);
         expect(context.set).toHaveBeenCalledWith('userEmail', validDecodedToken.email);
         expect(context.set).toHaveBeenCalledWith('firebaseToken', validDecodedToken);
+        // optionalAuthMiddlewareではUserServiceは呼び出されない
+        expect(mockFindOrCreateUser).not.toHaveBeenCalled();
         expect(next).toHaveBeenCalled();
       });
 
@@ -468,6 +528,8 @@ describe('認証ミドルウェア', () => {
         expect(next).toHaveBeenCalled();
         expect(context.set).not.toHaveBeenCalled(); // ユーザー情報は設定されない
         expect(context.json).not.toHaveBeenCalled(); // エラーレスポンスは返さない
+        // 無効トークン時はUserServiceは呼び出されない
+        expect(mockFindOrCreateUser).not.toHaveBeenCalled();
       });
     });
   });

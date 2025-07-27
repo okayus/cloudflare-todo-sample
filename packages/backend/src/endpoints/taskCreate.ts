@@ -67,7 +67,7 @@ export class TaskCreate extends OpenAPIRoute {
     console.log('🔄 TaskCreate: ハンドラー開始', {
       method: c.req.method,
       url: c.req.url,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     try {
@@ -81,9 +81,9 @@ export class TaskCreate extends OpenAPIRoute {
       const userId = c.get('userId');
       console.log('🔍 TaskCreate: ユーザーID確認', {
         userIdExists: !!userId,
-        userId: userId ? userId.substring(0, 8) + '...' : null
+        userId: userId ? userId.substring(0, 8) + '...' : null,
       });
-      
+
       if (!userId) {
         console.log('❌ TaskCreate: ユーザーID不在');
         return c.json({ success: false, error: '認証が必要です。' }, 401);
@@ -94,7 +94,7 @@ export class TaskCreate extends OpenAPIRoute {
       const data = await this.getValidatedData<typeof this.schema>();
       console.log('✅ TaskCreate: バリデーション完了', {
         bodyKeys: Object.keys(data.body || {}),
-        hasBody: !!data.body
+        hasBody: !!data.body,
       });
 
       const todoData = data.body;
@@ -105,7 +105,7 @@ export class TaskCreate extends OpenAPIRoute {
         completed: todoData.completed,
         hasTitle: !!todoData.title,
         hasDescription: todoData.description !== undefined,
-        hasDueDate: !!todoData.dueDate
+        hasDueDate: !!todoData.dueDate,
       });
 
       // データベース接続とサービス初期化
@@ -123,7 +123,7 @@ export class TaskCreate extends OpenAPIRoute {
       };
       console.log('🔍 TaskCreate: 作成データ最終確認', {
         createData,
-        createDataKeys: Object.keys(createData)
+        createDataKeys: Object.keys(createData),
       });
 
       // TODO作成実行
@@ -133,7 +133,7 @@ export class TaskCreate extends OpenAPIRoute {
         newTodoId: newTodo.id,
         newTodoTitle: newTodo.title,
         newTodoSlug: newTodo.slug,
-        createdKeys: Object.keys(newTodo)
+        createdKeys: Object.keys(newTodo),
       });
 
       return c.json(
@@ -143,22 +143,21 @@ export class TaskCreate extends OpenAPIRoute {
         },
         201
       );
-
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('❌ TaskCreate: TODO作成エラー:', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         isZodError: error instanceof z.ZodError,
-        errorType: error?.constructor?.name
+        errorType: error?.constructor?.name,
       });
 
       // バリデーションエラーの場合
       if (error instanceof z.ZodError) {
         console.log('❌ TaskCreate: Zodバリデーションエラー', {
-          errors: error.errors.map(e => ({ path: e.path, message: e.message }))
+          errors: error.errors.map(e => ({ path: e.path, message: e.message })),
         });
-        
+
         return c.json(
           {
             success: false,
@@ -176,9 +175,9 @@ export class TaskCreate extends OpenAPIRoute {
           error.message.includes('期限日の形式が無効'))
       ) {
         console.log('❌ TaskCreate: ビジネスロジックエラー', {
-          errorMessage: error.message
+          errorMessage: error.message,
         });
-        
+
         return c.json(
           {
             success: false,
@@ -189,16 +188,17 @@ export class TaskCreate extends OpenAPIRoute {
       }
 
       // データベースエラーの詳細確認
-      if (error instanceof Error && (
-        error.message.includes('UNIQUE constraint') ||
-        error.message.includes('FOREIGN KEY constraint') ||
-        error.message.includes('NOT NULL constraint')
-      )) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('UNIQUE constraint') ||
+          error.message.includes('FOREIGN KEY constraint') ||
+          error.message.includes('NOT NULL constraint'))
+      ) {
         console.log('❌ TaskCreate: データベース制約エラー', {
           errorMessage: error.message,
-          errorStack: error.stack
+          errorStack: error.stack,
         });
-        
+
         return c.json(
           {
             success: false,
@@ -211,9 +211,9 @@ export class TaskCreate extends OpenAPIRoute {
       // その他のサーバーエラー
       console.log('❌ TaskCreate: その他のサーバーエラー', {
         errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined
+        errorStack: error instanceof Error ? error.stack : undefined,
       });
-      
+
       return c.json(
         {
           success: false,
