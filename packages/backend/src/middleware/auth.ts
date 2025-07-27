@@ -38,11 +38,29 @@ declare module 'hono' {
  */
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   try {
+    // デバッグログ: 認証プロセス開始
+    console.log('🔄 authMiddleware: 認証プロセス開始', {
+      method: c.req.method,
+      url: c.req.url,
+      timestamp: new Date().toISOString()
+    });
+
     // Authorization headerからJWTトークンを取得
     const authHeader = c.req.header('Authorization');
+    console.log('🔍 authMiddleware: Authorization header確認', {
+      headerExists: !!authHeader,
+      headerPreview: authHeader ? authHeader.substring(0, 20) + '...' : null
+    });
+    
     const token = extractTokenFromHeader(authHeader);
+    console.log('🔍 authMiddleware: トークン抽出結果', {
+      tokenExtracted: !!token,
+      tokenLength: token?.length || 0,
+      tokenPreview: token ? token.substring(0, 20) + '...' : null
+    });
 
     if (!token) {
+      console.log('❌ authMiddleware: トークンなし');
       return c.json(
         {
           success: false,
@@ -54,12 +72,20 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     }
 
     // Firebase Authインスタンスを初期化
+    console.log('🔄 authMiddleware: Firebase Auth初期化');
     const auth = initializeFirebaseAuth(c.env);
 
     // JWT ID tokenを検証
+    console.log('🔄 authMiddleware: JWT検証開始');
     const decodedToken = await auth.verifyIdToken(token);
+    console.log('🔍 authMiddleware: JWT検証結果', {
+      tokenValid: !!decodedToken,
+      hasSubject: !!(decodedToken as any)?.sub,
+      hasEmail: !!(decodedToken as any)?.email
+    });
 
     if (!decodedToken) {
+      console.log('❌ authMiddleware: JWT検証失敗');
       return c.json(
         {
           success: false,
@@ -71,6 +97,10 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
 
     // 必須フィールドの検証
     if (!decodedToken.sub || !decodedToken.email) {
+      console.log('❌ authMiddleware: 必須フィールド不足', {
+        hasSub: !!decodedToken.sub,
+        hasEmail: !!decodedToken.email
+      });
       return c.json(
         {
           success: false,
@@ -84,13 +114,22 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     c.set('userId', decodedToken.sub);
     c.set('userEmail', decodedToken.email);
     c.set('firebaseToken', decodedToken);
+    
+    console.log('✅ authMiddleware: 認証成功、ユーザー情報設定完了', {
+      userId: decodedToken.sub,
+      userEmail: decodedToken.email
+    });
 
     // 次のミドルウェア/ハンドラーに処理を渡す
     await next();
   } catch (error) {
     // エラーログ出力（本番環境では適切なロガーを使用）
     // eslint-disable-next-line no-console
-    console.error('認証ミドルウェアエラー:', error);
+    console.error('❌ authMiddleware: 認証ミドルウェアエラー:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      isFirebaseError: isFirebaseAuthError(error)
+    });
 
     // Firebase認証エラーの場合は適切なメッセージを返す
     if (isFirebaseAuthError(error)) {
