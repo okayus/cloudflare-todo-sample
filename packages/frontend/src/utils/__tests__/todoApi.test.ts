@@ -72,7 +72,13 @@ describe('todoApi', () => {
     it('Todo一覧を取得する（クエリパラメータなし）', async () => {
       const mockResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [mockTodo],
+        data: {
+          items: [mockTodo],
+          total: 1,
+          page: 0,
+          limit: 20,
+          totalPages: 1,
+        },
         pagination: {
           total: 1,
           page: 0,
@@ -101,7 +107,13 @@ describe('todoApi', () => {
 
       const mockResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [mockTodo],
+        data: {
+          items: [mockTodo],
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
         pagination: {
           total: 1,
           page: 1,
@@ -130,7 +142,13 @@ describe('todoApi', () => {
 
       const mockResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [],
+        data: {
+          items: [],
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
         pagination: {
           total: 0,
           page: 0,
@@ -151,7 +169,13 @@ describe('todoApi', () => {
     it('デフォルトのAPI_BASE_URLを使用する', async () => {
       const mockResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [],
+        data: {
+          items: [],
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
         pagination: { total: 0, page: 0, limit: 20, totalPages: 0 },
       }
 

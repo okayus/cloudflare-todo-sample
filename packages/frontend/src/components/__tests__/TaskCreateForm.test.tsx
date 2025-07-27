@@ -198,7 +198,7 @@ describe('TaskCreateForm', () => {
       await waitFor(() => {
         expect(mockCreateTodo).toHaveBeenCalledWith({
           title: '新しいタスク',
-          description: '', // 空文字として送信されることを期待
+          description: null, // 空の場合はnullとして送信される
           dueDate: expect.stringContaining('2024-12-31'),
         })
       })

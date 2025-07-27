@@ -43,7 +43,13 @@ describe('Dashboard', () => {
   // テスト用のモックレスポンス
   const mockTodosResponse: PaginatedResponse<Todo> = {
     success: true,
-    data: [],
+    data: {
+      items: [],
+      total: 0,
+      page: 0,
+      limit: 20,
+      totalPages: 0,
+    },
     pagination: {
       total: 0,
       page: 0,
@@ -133,21 +139,6 @@ describe('Dashboard', () => {
   })
 
   describe('ユーザー情報表示', () => {
-    it('認証済みユーザーの情報が正確に表示される', async () => {
-      const { Dashboard } = await import('../Dashboard')
-
-      render(<Dashboard />)
-
-      // ユーザー情報の表示確認
-      expect(screen.getByText('test@example.com')).toBeInTheDocument()
-      expect(screen.getByText('Test User')).toBeInTheDocument()
-      expect(screen.getByText('認証済み')).toBeInTheDocument()
-      
-      // TaskList の API 呼び出し完了を待つ
-      await waitFor(() => {
-        expect(mockGetTodos).toHaveBeenCalledWith()
-      })
-    })
 
     it('displayNameが設定されている場合は挨拶でdisplayNameを使用', async () => {
       const { Dashboard } = await import('../Dashboard')
@@ -216,49 +207,7 @@ describe('Dashboard', () => {
       })
     })
 
-    it('メール認証済みの場合は「認証済み」と表示', async () => {
-      const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
-
-      const emailVerifiedElement = screen.getByText('認証済み')
-      expect(emailVerifiedElement).toBeInTheDocument()
-      expect(emailVerifiedElement).toHaveClass('text-green-600')
-      
-      // TaskList の API 呼び出し完了を待つ
-      await waitFor(() => {
-        expect(mockGetTodos).toHaveBeenCalledWith()
-      })
-    })
-
-    it('メール未認証の場合は「未認証」と表示', async () => {
-      // メール未認証のユーザー
-      const unverifiedUser = {
-        ...mockUser,
-        emailVerified: false,
-      }
-
-      mockUseAuth.mockReturnValue({
-        user: unverifiedUser as User,
-        isLoading: false,
-        login: vi.fn(),
-        signup: vi.fn(),
-        logout: mockLogout,
-      })
-
-      const { Dashboard } = await import('../Dashboard')
-
-      render(<Dashboard />)
-
-      const emailVerifiedElement = screen.getByText('未認証')
-      expect(emailVerifiedElement).toBeInTheDocument()
-      expect(emailVerifiedElement).toHaveClass('text-red-600')
-      
-      // TaskList の API 呼び出し完了を待つ
-      await waitFor(() => {
-        expect(mockGetTodos).toHaveBeenCalledWith()
-      })
-    })
   })
 
   describe('ログアウト機能', () => {

@@ -70,7 +70,13 @@ const mockTodos: Todo[] = [
 
 const mockPaginatedResponse: PaginatedResponse<Todo> = {
   success: true,
-  data: mockTodos,
+  data: {
+    items: mockTodos,
+    total: 3,
+    page: 0,
+    limit: 20,
+    totalPages: 1,
+  },
   pagination: {
     total: 3,
     page: 0,
@@ -85,10 +91,12 @@ describe('TaskList', () => {
   })
 
   describe('認証状態管理', () => {
-    it('認証状態確認中はローディングを表示する', () => {
-      // AuthContextのisLoadingをtrueに設定（vi.mockで既にモック済み）
-      const authContextMock = vi.mocked(require('../../contexts/AuthContext'))
-      authContextMock.useAuth.mockReturnValueOnce({
+    it('認証状態確認中はローディングを表示する', async () => {
+      // 動的importでuseAuthモックを上書き
+      const { useAuth } = await import('../../contexts/AuthContext')
+      const mockUseAuth = vi.mocked(useAuth)
+      
+      mockUseAuth.mockReturnValueOnce({
         isLoading: true,
         user: null,
         login: vi.fn(),
@@ -179,8 +187,11 @@ describe('TaskList', () => {
 
       render(<TaskList />)
 
+      // タスクがある場合は task-list、空の場合は task-list-empty
       await waitFor(() => {
-        expect(screen.getByTestId('task-list')).toBeInTheDocument()
+        expect(
+          screen.getByTestId('task-list') || screen.getByTestId('task-list-empty')
+        ).toBeInTheDocument()
       })
     })
   })
@@ -270,7 +281,13 @@ describe('TaskList', () => {
     it('タスクが0件の場合に空状態メッセージが表示される', async () => {
       const emptyResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [],
+        data: {
+          items: [],
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
         pagination: {
           total: 0,
           page: 0,
@@ -293,7 +310,13 @@ describe('TaskList', () => {
     it('空状態でタスク件数が0件と表示される', async () => {
       const emptyResponse: PaginatedResponse<Todo> = {
         success: true,
-        data: [],
+        data: {
+          items: [],
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
         pagination: {
           total: 0,
           page: 0,
@@ -451,12 +474,29 @@ describe('TaskList', () => {
     })
 
     it('カスタムクラス名が適用される', async () => {
-      mockGetTodos.mockResolvedValueOnce(mockPaginatedResponse)
+      // 空状態でテストして data-testid が変更されることを確認
+      const emptyResponse: PaginatedResponse<Todo> = {
+        success: true,
+        data: {
+          items: [],
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
+        pagination: {
+          total: 0,
+          page: 0,
+          limit: 20,
+          totalPages: 0,
+        },
+      }
+      mockGetTodos.mockResolvedValueOnce(emptyResponse)
 
       render(<TaskList className="custom-task-list" />)
 
       await waitFor(() => {
-        const taskList = screen.getByTestId('task-list')
+        const taskList = screen.getByTestId('task-list-empty')
         expect(taskList).toHaveClass('custom-task-list')
       })
     })
