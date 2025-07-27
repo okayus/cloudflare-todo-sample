@@ -38,17 +38,37 @@ export class ApiError extends Error {
  */
 async function getAuthHeader(): Promise<string | null> {
   try {
+    console.log('🔄 getAuthHeader: 認証ヘッダー取得開始')
+    
     const authInstance = await auth()
+    console.log('✅ getAuthHeader: Firebase Auth取得成功', authInstance)
+    
     const currentUser = authInstance.currentUser
+    console.log('🔍 getAuthHeader: currentUser状態', {
+      exists: !!currentUser,
+      uid: currentUser?.uid,
+      email: currentUser?.email,
+      emailVerified: currentUser?.emailVerified
+    })
 
     if (!currentUser) {
+      console.warn('⚠️ getAuthHeader: ユーザーが未ログイン状態です')
       return null
     }
 
-    const token = await currentUser.getIdToken()
-    return `Bearer ${token}`
+    console.log('🔄 getAuthHeader: IDトークン取得開始')
+    // トークンの強制リフレッシュオプション（必要に応じて有効化）
+    const token = await currentUser.getIdToken(false)
+    console.log('✅ getAuthHeader: IDトークン取得成功', {
+      tokenLength: token.length,
+      tokenPreview: token.substring(0, 20) + '...'
+    })
+    
+    const authHeader = `Bearer ${token}`
+    console.log('✅ getAuthHeader: 認証ヘッダー生成完了')
+    return authHeader
   } catch (error) {
-    console.error('認証トークン取得エラー:', error)
+    console.error('❌ getAuthHeader: 認証トークン取得エラー:', error)
     return null
   }
 }

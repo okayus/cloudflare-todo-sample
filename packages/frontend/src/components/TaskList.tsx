@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import type { Todo } from '@cloudflare-todo-sample/shared'
 import { getTodos, toggleTodoCompletion } from '../utils/todoApi'
+import { useAuth } from '../contexts/AuthContext'
 
 /**
  * TaskList コンポーネントのProps
@@ -91,6 +92,19 @@ export const TaskList: React.FC<TaskListProps> = ({
   /** 更新中のタスクID（楽観的UI更新用） */
   const [updatingTodoIds, setUpdatingTodoIds] = useState<Set<string>>(new Set())
 
+  /** 認証状態を取得 */
+  const { user, isLoading: authLoading } = useAuth()
+  
+  // 認証状態のログ出力
+  useEffect(() => {
+    console.log('🔍 TaskList: 認証状態変更', {
+      authLoading,
+      userExists: !!user,
+      userEmail: user?.email,
+      timestamp: new Date().toISOString()
+    })
+  }, [authLoading, user])
+
   /**
    * タスクデータ取得
    *
@@ -99,22 +113,50 @@ export const TaskList: React.FC<TaskListProps> = ({
    */
   const fetchTodos = async () => {
     try {
+      console.log('🔄 TaskList: fetchTodos開始', {
+        authLoading,
+        userExists: !!user,
+        userEmail: user?.email,
+        timestamp: new Date().toISOString()
+      })
+      
       setIsLoading(true)
       setErrorMessage(null)
       
+      console.log('🔄 TaskList: getTodos API呼び出し開始')
       const response = await getTodos()
+      console.log('✅ TaskList: getTodos API呼び出し成功', response)
       
       if (response.success) {
-        setTodos(response.data)
-        setTotalCount(response.pagination.total)
+        console.log('🔍 TaskList: レスポンスデータ構造確認', {
+          dataKeys: Object.keys(response.data),
+          hasItems: 'items' in response.data,
+          hasTotal: 'total' in response.data,
+          itemsLength: response.data.items?.length || 0,
+          total: response.data.total
+        })
+        
+        setTodos(response.data.items || [])
+        setTotalCount(response.data.total || 0)
+        console.log('✅ TaskList: データ更新完了', {
+          todoCount: response.data.items?.length || 0,
+          total: response.data.total || 0
+        })
       } else {
         throw new Error('タスクの取得に失敗しました')
       }
     } catch (error) {
-      console.error('TaskList: データ取得エラー:', error)
-      setErrorMessage('タスクの取得に失敗しました')
+      console.error('❌ TaskList: データ取得エラー:', error)
+      
+      // 認証エラーの場合は専用メッセージ
+      if (error instanceof Error && error.message.includes('認証')) {
+        setErrorMessage('ログインが必要です。再度ログインしてください。')
+      } else {
+        setErrorMessage('タスクの取得に失敗しました')
+      }
     } finally {
       setIsLoading(false)
+      console.log('🏁 TaskList: fetchTodos完了')
     }
   }
 
@@ -179,15 +221,30 @@ export const TaskList: React.FC<TaskListProps> = ({
 
   /**
    * 初期データ取得
+   * 認証状態が確定してからAPI呼び出しを実行
    */
   useEffect(() => {
-    fetchTodos()
-  }, [])
+    console.log('🔄 TaskList: useEffect[authLoading]実行', {
+      authLoading,
+      userExists: !!user,
+      shouldFetch: !authLoading,
+      timestamp: new Date().toISOString()
+    })
+    
+    // Firebase認証の初期化が完了するまで待機
+    if (!authLoading) {
+      console.log('✅ TaskList: 認証完了、データ取得開始')
+      fetchTodos()
+    } else {
+      console.log('⏳ TaskList: 認証確認中、データ取得待機')
+    }
+  }, [authLoading])
 
   /**
    * ローディング状態の表示
+   * 認証状態確認中またはデータ取得中の場合に表示
    */
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div
         data-testid="task-list-loading"

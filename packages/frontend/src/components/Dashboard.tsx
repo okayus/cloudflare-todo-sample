@@ -4,7 +4,7 @@
  * 認証済みユーザー向けのメインページ。
  * タスク作成・一覧表示機能を統合したTodo管理ダッシュボード。
  */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import type { Todo } from '@cloudflare-todo-sample/shared'
 import { useAuth } from '../contexts/AuthContext'
 import { TaskCreateForm } from './TaskCreateForm'
@@ -27,6 +27,17 @@ export const Dashboard: React.FC = () => {
   
   /** タスク作成フォームの表示/非表示 */
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false)
+  
+  // Dashboard認証状態のログ出力
+  useEffect(() => {
+    console.log('🔍 Dashboard: ユーザー状態変更', {
+      userExists: !!user,
+      userEmail: user?.email,
+      userEmailVerified: user?.emailVerified,
+      userDisplayName: user?.displayName,
+      timestamp: new Date().toISOString()
+    })
+  }, [user])
 
   /**
    * ログアウト処理
@@ -140,9 +151,14 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">認証状態:</span>
-                  <span className={`ml-2 ${user?.emailVerified ? 'text-green-600' : 'text-red-600'}`}>
-                    {user?.emailVerified ? '認証済み' : '未認証'}
+                  <span className={`ml-2 ${user ? 'text-green-600' : 'text-red-600'}`}>
+                    {user ? 'ログイン済み' : '未ログイン'}
                   </span>
+                  {user && (
+                    <span className={`ml-2 text-sm ${user.emailVerified ? 'text-green-500' : 'text-orange-500'}`}>
+                      ({user.emailVerified ? 'メール確認済み' : 'メール未確認'})
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

@@ -11,6 +11,14 @@ import type { PaginatedResponse, Todo, ApiResponse } from '@cloudflare-todo-samp
 import { TaskList } from '../TaskList'
 import * as todoApi from '../../utils/todoApi'
 
+// AuthContext のモック
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    isLoading: false, // デフォルトは認証完了状態
+    user: { uid: 'test-user', email: 'test@example.com' },
+  })),
+}))
+
 // todoApi のモック
 vi.mock('../../utils/todoApi', () => ({
   getTodos: vi.fn(),
@@ -74,6 +82,39 @@ const mockPaginatedResponse: PaginatedResponse<Todo> = {
 describe('TaskList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe('認証状態管理', () => {
+    it('認証状態確認中はローディングを表示する', () => {
+      // AuthContextのisLoadingをtrueに設定（vi.mockで既にモック済み）
+      const authContextMock = vi.mocked(require('../../contexts/AuthContext'))
+      authContextMock.useAuth.mockReturnValueOnce({
+        isLoading: true,
+        user: null,
+        login: vi.fn(),
+        signup: vi.fn(),
+        logout: vi.fn(),
+      })
+
+      render(<TaskList />)
+
+      // ローディング表示の確認
+      expect(screen.getByTestId('task-list-loading')).toBeInTheDocument()
+      
+      // API呼び出しは行われない
+      expect(mockGetTodos).not.toHaveBeenCalled()
+    })
+
+    it('認証完了後にタスク取得を実行する', async () => {
+      mockGetTodos.mockResolvedValueOnce(mockPaginatedResponse)
+
+      render(<TaskList />)
+
+      // 認証完了後にAPI呼び出しが実行される
+      await waitFor(() => {
+        expect(mockGetTodos).toHaveBeenCalledWith()
+      })
+    })
   })
 
   describe('データ取得・表示', () => {
