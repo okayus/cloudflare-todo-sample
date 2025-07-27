@@ -142,7 +142,7 @@ export const TaskCreateForm: React.FC<TaskCreateFormProps> = ({
       // API用のデータ形式に変換
       const todoData = {
         title: data.title,
-        description: data.description || '', // 空文字の場合は空文字を送信
+        description: data.description || null, // 空文字の場合はnullを送信
         dueDate: formatDateToISO(data.dueDate),
       }
 

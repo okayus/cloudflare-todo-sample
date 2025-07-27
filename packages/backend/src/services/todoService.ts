@@ -239,24 +239,58 @@ export class TodoService {
 
       // TODO作成データの準備
       const now = getCurrentTimestamp();
+      console.log('🔄 TodoService.createTodo: データ準備開始', {
+        userId: userId.substring(0, 8) + '...',
+        title: todoData.title,
+        description: todoData.description,
+        dueDate: todoData.dueDate,
+        completed: todoData.completed,
+        slug,
+        now
+      });
+
       const newTodoData: NewTodo = {
         id: generateId(),
         userId,
-        slug,
         title: todoData.title.trim(),
         description: todoData.description?.trim() || null,
-        dueDate: normalizeDate(todoData.dueDate),
         completed: todoData.completed || false,
+        dueDate: normalizeDate(todoData.dueDate),
         createdAt: now,
         updatedAt: now,
         deletedAt: null,
+        slug,
       };
 
+      console.log('🔍 TodoService.createTodo: 最終挿入データ', {
+        id: newTodoData.id,
+        userId: newTodoData.userId.substring(0, 8) + '...',
+        slug: newTodoData.slug,
+        title: newTodoData.title,
+        description: newTodoData.description,
+        dueDate: newTodoData.dueDate,
+        completed: newTodoData.completed,
+        createdAt: newTodoData.createdAt,
+        updatedAt: newTodoData.updatedAt,
+        deletedAt: newTodoData.deletedAt
+      });
+
       // データベースに挿入
+      console.log('🔄 TodoService.createTodo: データベース挿入開始');
       const result = await this.db.insert(todos).values(newTodoData).returning();
+      console.log('✅ TodoService.createTodo: データベース挿入成功', {
+        insertedCount: result.length,
+        insertedId: result[0]?.id,
+        insertedTitle: result[0]?.title
+      });
 
       return result[0];
     } catch (error) {
+      console.error('❌ TodoService.createTodo: サービスエラー', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        errorType: error?.constructor?.name
+      });
       throw new Error(`TODO作成エラー: ${handleDatabaseError(error)}`);
     }
   }

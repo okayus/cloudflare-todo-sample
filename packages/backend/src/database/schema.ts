@@ -84,7 +84,7 @@ export const todos = sqliteTable(
       .default(sql`CURRENT_TIMESTAMP`),
 
     /** 削除日時（論理削除用、NULL = 未削除） */
-    deletedAt: text('deleted_at'),
+    deletedAt: text('deleted_at').$defaultFn(() => null),
 
     /** URL用スラッグ（一意制約） */
     slug: text('slug').notNull().unique(),

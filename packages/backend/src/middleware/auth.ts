@@ -12,6 +12,8 @@ import {
   normalizeAuthError,
   isFirebaseAuthError,
 } from '../utils/auth';
+import { getDatabase } from '../database/connection';
+import { UserService } from '../services/userService';
 
 /**
  * 認証済みユーザー情報をコンテキストに追加する型拡張
@@ -110,6 +112,27 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
       );
     }
 
+    // データベース接続とユーザーサービス初期化
+    console.log('🔄 authMiddleware: ユーザーDB登録確認開始');
+    const db = getDatabase(c);
+    const userService = new UserService(db);
+
+    // ユーザー自動登録（既存なら取得、新規なら作成）
+    const user = await userService.findOrCreateUser(
+      decodedToken.sub,
+      decodedToken.email,
+      decodedToken.name || null
+    );
+
+    console.log('✅ authMiddleware: ユーザーDB登録確認完了', {
+      userId: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      isNewUser: user.createdAt === user.updatedAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    });
+
     // 認証済みユーザー情報をコンテキストに設定
     c.set('userId', decodedToken.sub);
     c.set('userEmail', decodedToken.email);
@@ -128,7 +151,8 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     console.error('❌ authMiddleware: 認証ミドルウェアエラー:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-      isFirebaseError: isFirebaseAuthError(error)
+      isFirebaseError: isFirebaseAuthError(error),
+      isUserServiceError: error instanceof Error && error.message.includes('ユーザー')
     });
 
     // Firebase認証エラーの場合は適切なメッセージを返す
@@ -139,6 +163,22 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
           error: normalizeAuthError(error),
         },
         401
+      );
+    }
+
+    // ユーザーサービス関連エラー（DB接続、ユーザー作成エラーなど）
+    if (error instanceof Error && (
+      error.message.includes('ユーザー') ||
+      error.message.includes('データベース') ||
+      error.message.includes('D1 database')
+    )) {
+      console.error('❌ authMiddleware: ユーザーDB処理エラー:', error.message);
+      return c.json(
+        {
+          success: false,
+          error: 'ユーザー情報の処理中にエラーが発生しました。',
+        },
+        500
       );
     }
 
