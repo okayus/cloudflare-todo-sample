@@ -57,6 +57,20 @@
 	 */
 
 	/**
+	 * Environment-specific configurations
+	 */
+	"env": {
+		"production": {
+			"name": "backend",
+			"vars": {
+				"ENVIRONMENT": "production",
+				"FIREBASE_PROJECT_ID": "cloudflare-todo-sample",
+				"PUBLIC_JWK_CACHE_KEY": "firebase-jwk-cache"
+			}
+		}
+	}
+
+	/**
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */
