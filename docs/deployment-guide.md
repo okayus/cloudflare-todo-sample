@@ -35,6 +35,35 @@ graph TB
 - **Database**: D1 Database (既存)
 - **Cache**: KV Storage (JWT公開鍵キャッシュ)
 
+## ⚠️ 重要: 環境変数チェックリスト
+
+デプロイ前に以下の環境変数が**必ず**設定されていることを確認してください：
+
+### 必須環境変数 (GitHub Secrets)
+
+#### バックエンド用
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API Token (Workers編集権限)
+- `CLOUDFLARE_ACCOUNT_ID` - CloudflareアカウントID
+
+#### フロントエンド用
+- `VITE_API_BASE_URL` - バックエンドWorkers URL（例：`https://backend.your-subdomain.workers.dev`）
+- `VITE_FIREBASE_API_KEY` - Firebase API Key
+- `VITE_FIREBASE_AUTH_DOMAIN` - Firebase Auth Domain
+- `VITE_FIREBASE_PROJECT_ID` - Firebase Project ID
+- `VITE_FIREBASE_STORAGE_BUCKET` - Firebase Storage Bucket
+- `VITE_FIREBASE_MESSAGING_SENDER_ID` - Firebase Messaging Sender ID
+- `VITE_FIREBASE_APP_ID` - Firebase App ID
+
+### 📋 デプロイ前確認チェックリスト
+
+- [ ] GitHub Secretsに上記すべての環境変数が設定済み
+- [ ] `VITE_API_BASE_URL`の値にWorkers URLが正しく設定済み（末尾スラッシュなし）
+- [ ] バックエンドWorkerが手動デプロイで動作確認済み
+- [ ] Firebase設定値がプロジェクト設定と一致している
+- [ ] CI/CDパイプラインが正常に実行される
+
+> 💡 **重要**: `VITE_API_BASE_URL`が未設定の場合、本番環境でも`localhost:8787`にアクセスしてCORSエラーが発生します。
+
 ## Phase 1: 事前準備
 
 ### 1.1 Cloudflare API Token作成

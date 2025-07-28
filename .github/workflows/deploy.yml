@@ -153,6 +153,38 @@ jobs:
           path: packages/shared/dist
           key: shared-build-${{ github.sha }}
 
+      - name: 🔍 Environment Variables Check
+        run: |
+          echo "Checking required environment variables..."
+          
+          # Firebase設定確認
+          [ -n "$VITE_FIREBASE_API_KEY" ] && echo "✅ VITE_FIREBASE_API_KEY" || echo "❌ VITE_FIREBASE_API_KEY"
+          [ -n "$VITE_FIREBASE_AUTH_DOMAIN" ] && echo "✅ VITE_FIREBASE_AUTH_DOMAIN" || echo "❌ VITE_FIREBASE_AUTH_DOMAIN"
+          [ -n "$VITE_FIREBASE_PROJECT_ID" ] && echo "✅ VITE_FIREBASE_PROJECT_ID" || echo "❌ VITE_FIREBASE_PROJECT_ID"
+          [ -n "$VITE_FIREBASE_STORAGE_BUCKET" ] && echo "✅ VITE_FIREBASE_STORAGE_BUCKET" || echo "❌ VITE_FIREBASE_STORAGE_BUCKET"
+          [ -n "$VITE_FIREBASE_MESSAGING_SENDER_ID" ] && echo "✅ VITE_FIREBASE_MESSAGING_SENDER_ID" || echo "❌ VITE_FIREBASE_MESSAGING_SENDER_ID"
+          [ -n "$VITE_FIREBASE_APP_ID" ] && echo "✅ VITE_FIREBASE_APP_ID" || echo "❌ VITE_FIREBASE_APP_ID"
+          
+          # API URL確認
+          [ -n "$VITE_API_BASE_URL" ] && echo "✅ VITE_API_BASE_URL: $VITE_API_BASE_URL" || echo "❌ VITE_API_BASE_URL"
+          
+          # 必須チェック
+          if [ -z "$VITE_API_BASE_URL" ] || [ -z "$VITE_FIREBASE_API_KEY" ]; then
+            echo "❌ Required environment variables are missing!"
+            echo "Please check GitHub Secrets configuration."
+            exit 1
+          fi
+          
+          echo "✅ All required environment variables are set"
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
       - name: 🏗️ Build frontend
         run: pnpm --filter=@cloudflare-todo-sample/frontend build
         env:
