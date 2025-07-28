@@ -1,0 +1,325 @@
+{
+  "wallTime": 4,
+  "cpuTime": 3,
+  "truncated": false,
+  "executionModel": "stateless",
+  "outcome": "ok",
+  "scriptVersion": {
+    "id": "5e1920c8-58d5-4f7a-8fa8-041c09fdf249"
+  },
+  "scriptName": "backend",
+  "diagnosticsChannelEvents": [],
+  "exceptions": [],
+  "logs": [
+    {
+      "message": [
+        "<-- GET /api/todos"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔄 TaskList: ハンドラー開始",
+        {
+          "method": "GET",
+          "url": "https://backend.toshiaki-mukai-9981.workers.dev/api/todos",
+          "timestamp": "2025-07-28T11:21:13.545Z"
+        }
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔄 TaskList: 認証ミドルウェア実行開始"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔄 authMiddleware: 認証プロセス開始",
+        {
+          "method": "GET",
+          "url": "https://backend.toshiaki-mukai-9981.workers.dev/api/todos",
+          "timestamp": "2025-07-28T11:21:13.545Z"
+        }
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔍 authMiddleware: Authorization header確認",
+        {
+          "headerExists": true,
+          "headerPreview": "Bearer eyJhbGciOiJSU..."
+        }
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔍 authMiddleware: トークン抽出結果",
+        {
+          "tokenExtracted": true,
+          "tokenLength": 934,
+          "tokenPreview": "eyJhbGciOiJSUzI1NiIs..."
+        }
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔄 authMiddleware: Firebase Auth初期化"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔄 authMiddleware: JWT検証開始"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "❌ authMiddleware: 認証ミドルウェアエラー:",
+        {
+          "error": "Error fetching public keys for Google certs: TypeError: Cannot read properties of undefined (reading 'get')",
+          "stack": "Error: Error fetching public keys for Google certs: TypeError: Cannot read properties of undefined (reading 'get')\n    at FirebaseTokenVerifier.mapJwtErrorToAuthError (index.js:18662:12)\n    at FirebaseTokenVerifier.decodeAndVerify (index.js:18605:20)\n    at async _Auth.verifyIdToken (index.js:18752:28)\n    at async authMiddleware (index.js:19239:26)\n    at async TaskList.handle (index.js:19827:7)\n    at async TaskList.execute (index.js:8648:14)\n    at async dispatch (index.js:8804:17)\n    at async cors2 (index.js:10396:5)\n    at async dispatch (index.js:8804:17)\n    at async logger2 (index.js:10458:5)",
+          "isFirebaseError": false,
+          "isUserServiceError": false
+        }
+      ],
+      "level": "error",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "🔍 TaskList: ユーザーID確認",
+        {
+          "userIdExists": false,
+          "userId": null
+        }
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "❌ TaskList: ユーザーID不在"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    },
+    {
+      "message": [
+        "--> GET /api/todos \u001b[33m401\u001b[0m 0ms"
+      ],
+      "level": "log",
+      "timestamp": 1753701673545
+    }
+  ],
+  "eventTimestamp": 1753701673545,
+  "event": {
+    "request": {
+      "url": "https://backend.toshiaki-mukai-9981.workers.dev/api/todos",
+      "method": "GET",
+      "headers": {
+        "accept": "*/*",
+        "accept-encoding": "gzip, br",
+        "accept-language": "ja,en-US;q=0.9,en;q=0.8",
+        "authorization": "REDACTED",
+        "cf-connecting-ip": "126.36.193.206",
+        "cf-ipcountry": "JP",
+        "cf-ray": "9663fde38e46d3ee",
+        "cf-visitor": "{\"scheme\":\"https\"}",
+        "connection": "Keep-Alive",
+        "content-type": "application/json",
+        "host": "backend.toshiaki-mukai-9981.workers.dev",
+        "origin": "https://cloudflare-todo-sample-frontend.pages.dev",
+        "priority": "u=1, i",
+        "referer": "https://cloudflare-todo-sample-frontend.pages.dev/",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "x-forwarded-proto": "https",
+        "x-real-ip": "126.36.193.206"
+      },
+      "cf": {
+        "requestHeaderNames": {},
+        "httpProtocol": "HTTP/3",
+        "tlsCipher": "AEAD-AES128-GCM-SHA256",
+        "continent": "AS",
+        "asn": 17676,
+        "clientAcceptEncoding": "gzip, deflate, br, zstd",
+        "verifiedBotCategory": "",
+        "country": "JP",
+        "isEUCountry": false,
+        "region": "Kanagawa",
+        "tlsClientCiphersSha1": "",
+        "tlsClientAuth": {
+          "certIssuerDNLegacy": "",
+          "certIssuerSKI": "",
+          "certSubjectDNRFC2253": "",
+          "certSubjectDNLegacy": "",
+          "certFingerprintSHA256": "",
+          "certNotBefore": "",
+          "certSKI": "",
+          "certSerial": "",
+          "certIssuerDN": "",
+          "certVerified": "NONE",
+          "certNotAfter": "",
+          "certSubjectDN": "",
+          "certPresented": "0",
+          "certRevoked": "0",
+          "certIssuerSerial": "",
+          "certIssuerDNRFC2253": "",
+          "certFingerprintSHA1": ""
+        },
+        "tlsClientRandom": "d+Luvfag0ns1uKzBN+fPhMIrYWsiyC9WJBGUwIWlitY=",
+        "tlsClientHelloLength": "1763",
+        "colo": "KIX",
+        "timezone": "Asia/Tokyo",
+        "longitude": "139.65000",
+        "latitude": "35.43333",
+        "edgeRequestKeepAliveStatus": 1,
+        "requestPriority": "",
+        "postalCode": "220-8588",
+        "city": "Yokohama",
+        "tlsVersion": "TLSv1.3",
+        "regionCode": "14",
+        "asOrganization": "Japan Nation-wide Network of Softbank Corp.",
+        "tlsClientExtensionsSha1Le": "",
+        "tlsClientExtensionsSha1": "v6c7vQgAWD4U76cYmMes5bgqQYs="
+      }
+    },
+    "response": {
+      "status": 401
+    }
+  }
+}
+{
+  "wallTime": 1,
+  "cpuTime": 1,
+  "truncated": false,
+  "executionModel": "stateless",
+  "outcome": "ok",
+  "scriptVersion": {
+    "id": "5e1920c8-58d5-4f7a-8fa8-041c09fdf249"
+  },
+  "scriptName": "backend",
+  "diagnosticsChannelEvents": [],
+  "exceptions": [],
+  "logs": [
+    {
+      "message": [
+        "<-- OPTIONS /api/todos"
+      ],
+      "level": "log",
+      "timestamp": 1753701673507
+    },
+    {
+      "message": [
+        "--> OPTIONS /api/todos \u001b[32m204\u001b[0m 0ms"
+      ],
+      "level": "log",
+      "timestamp": 1753701673507
+    }
+  ],
+  "eventTimestamp": 1753701673507,
+  "event": {
+    "request": {
+      "url": "https://backend.toshiaki-mukai-9981.workers.dev/api/todos",
+      "method": "OPTIONS",
+      "headers": {
+        "accept": "*/*",
+        "accept-encoding": "gzip, deflate, br, zstd",
+        "accept-language": "ja,en-US;q=0.9,en;q=0.8",
+        "access-control-request-headers": "authorization,content-type",
+        "access-control-request-method": "GET",
+        "cf-connecting-ip": "126.36.193.206",
+        "cf-ipcountry": "JP",
+        "cf-pref-ob": "0",
+        "cf-ray": "9663fde36ed300a5",
+        "cf-use-ob": "0",
+        "cf-visitor": "{\"scheme\":\"https\"}",
+        "host": "backend.toshiaki-mukai-9981.workers.dev",
+        "origin": "https://cloudflare-todo-sample-frontend.pages.dev",
+        "priority": "u=1, i",
+        "referer": "https://cloudflare-todo-sample-frontend.pages.dev/",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "x-forwarded-proto": "https"
+      },
+      "cf": {
+        "httpProtocol": "HTTP/2",
+        "clientAcceptEncoding": "gzip, deflate, br, zstd",
+        "requestPriority": "weight=220;exclusive=1",
+        "edgeRequestKeepAliveStatus": 1,
+        "requestHeaderNames": {},
+        "clientTcpRtt": 14,
+        "colo": "KIX",
+        "asn": 17676,
+        "asOrganization": "Japan Nation-wide Network of Softbank Corp.",
+        "country": "JP",
+        "isEUCountry": false,
+        "city": "Yokohama",
+        "continent": "AS",
+        "region": "Kanagawa",
+        "regionCode": "14",
+        "timezone": "Asia/Tokyo",
+        "longitude": "139.65",
+        "latitude": "35.43333",
+        "postalCode": "220-8588",
+        "tlsVersion": "TLSv1.3",
+        "tlsCipher": "AEAD-AES128-GCM-SHA256",
+        "tlsClientRandom": "6Exfql4edNjbKHtuzLgQ8FYNtF62Faca/XvOEPPSQsk=",
+        "tlsClientCiphersSha1": "2SKCJrVPJ5Gw3bPf1m2zIZskTlo=",
+        "tlsClientExtensionsSha1": "zp+ill8wdRIuu8SBQC5C5DGGHsI=",
+        "tlsClientExtensionsSha1Le": "xnK31Mbk/u9y6IIrg54I7PHO/1w=",
+        "tlsExportedAuthenticator": {
+          "clientHandshake": "12dfcf0475455e1f33b62f589624bd43b74ae1f24d52a854d01da5eeec2425ca",
+          "serverHandshake": "781ec1e5da2e0c28413a4427140befb922d07ad1ea8f7f355a98d31a6cf83ff0",
+          "clientFinished": "29ac76925fe6e07f65033ae615fd14647681e16443c83d4259d891aa41291cdd",
+          "serverFinished": "c519c6f34ea8977530f7950b1c182557d20ea10a01f198c282c8e4aafb9b7437"
+        },
+        "tlsClientHelloLength": "1749",
+        "tlsClientAuth": {
+          "certPresented": "0",
+          "certVerified": "NONE",
+          "certRevoked": "0",
+          "certIssuerDN": "",
+          "certSubjectDN": "",
+          "certIssuerDNRFC2253": "",
+          "certSubjectDNRFC2253": "",
+          "certIssuerDNLegacy": "",
+          "certSubjectDNLegacy": "",
+          "certSerial": "",
+          "certIssuerSerial": "",
+          "certSKI": "",
+          "certIssuerSKI": "",
+          "certFingerprintSHA1": "",
+          "certFingerprintSHA256": "",
+          "certNotBefore": "",
+          "certNotAfter": ""
+        },
+        "verifiedBotCategory": ""
+      }
+    },
+    "response": {
+      "status": 204
+    }
+  }
+}

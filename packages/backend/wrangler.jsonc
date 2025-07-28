@@ -58,6 +58,9 @@
 
 	/**
 	 * Environment-specific configurations
+	 * 
+	 * Cloudflare Workersでは環境設定使用時にバインディングが自動継承されないため、
+	 * 各環境でKV・D1等のバインディングを明示的に定義する必要がある。
 	 */
 	"env": {
 		"production": {
@@ -66,7 +69,21 @@
 				"ENVIRONMENT": "production",
 				"FIREBASE_PROJECT_ID": "cloudflare-todo-sample",
 				"PUBLIC_JWK_CACHE_KEY": "firebase-jwk-cache"
-			}
+			},
+			"kv_namespaces": [
+				{
+					"binding": "JWT_CACHE",
+					"id": "a9500f6c3127441b94e29a15f4fa7bb0",
+					"preview_id": "4d9b8ee3bfb04fbb92f9fb1c09adc173"
+				}
+			],
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "todo-app-db",
+					"database_id": "07aab756-fe4a-4042-9e12-177b680ed67d"
+				}
+			]
 		}
 	}
 
