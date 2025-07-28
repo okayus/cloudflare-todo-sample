@@ -21,15 +21,38 @@ const app = new Hono<{ Bindings: Env }>();
 
 // ミドルウェア設定
 app.use('*', logger()); // アクセスログ出力
-app.use(
-  '*',
-  cors({
+/**
+ * 環境に応じた許可オリジンを取得
+ * 
+ * 開発環境と本番環境で異なるフロントエンドURLを
+ * 適切に設定し、セキュリティを保ちながらCORS制御を行う。
+ * 
+ * @param env - Cloudflare Workers環境変数
+ * @returns 許可するオリジンの配列
+ */
+function getAllowedOrigins(env: Env): string[] {
+  const baseOrigins = [
+    'http://localhost:3000',  // 開発環境（React dev server）
+    'http://localhost:5173',  // 開発環境（Vite dev server）
+  ];
+  
+  // 本番環境では本番フロントエンドURLを追加
+  if (env.ENVIRONMENT === 'production') {
+    baseOrigins.push('https://cloudflare-todo-sample-frontend.pages.dev');
+  }
+  
+  return baseOrigins;
+}
+
+app.use('*', (c, next) => {
+  const corsMiddleware = cors({
     // CORS設定（フロントエンド連携用）
-    origin: ['http://localhost:3000', 'http://localhost:5173'], // 開発環境
+    origin: getAllowedOrigins(c.env),
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+  });
+  return corsMiddleware(c, next);
+});
 
 // OpenAPIレジストリ設定
 const openapi = fromHono(app, {
