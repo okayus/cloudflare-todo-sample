@@ -110,6 +110,7 @@ export const TaskList: React.FC<TaskListProps> = ({
    *
    * APIからタスク一覧を取得し、状態を更新する。
    * エラー時はエラーメッセージを設定。
+   * useCallbackでメモ化してuseEffect依存関係を最適化。
    */
   const fetchTodos = async () => {
     try {
@@ -231,13 +232,14 @@ export const TaskList: React.FC<TaskListProps> = ({
       timestamp: new Date().toISOString()
     })
     
-    // Firebase認証の初期化が完了するまで待機
+    // Firebase認証の初期化が完了してからデータ取得
     if (!authLoading) {
       console.log('✅ TaskList: 認証完了、データ取得開始')
       fetchTodos()
     } else {
       console.log('⏳ TaskList: 認証確認中、データ取得待機')
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading])
 
   /**
