@@ -86,20 +86,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * アンマウント時にリスナーを削除してメモリリークを防ぐ。
    */
   useEffect(() => {
+    console.log('🔄 AuthContext: useEffect実行開始')
     let unsubscribe: (() => void) | undefined
 
     const setupAuthListener = async () => {
-      const authInstance = await auth()
-      unsubscribe = onAuthStateChanged(authInstance, (user) => {
-        setUser(user)
+      try {
+        console.log('🔄 AuthContext: Firebase Auth初期化開始')
+        const authInstance = await auth()
+        console.log('✅ AuthContext: Firebase Auth初期化成功', authInstance)
+        
+        unsubscribe = onAuthStateChanged(authInstance, (user) => {
+          console.log('🔄 AuthContext: onAuthStateChanged実行', {
+            user: user ? {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName
+            } : null,
+            timestamp: new Date().toISOString()
+          })
+          
+          setUser(user)
+          setIsLoading(false)
+          
+          console.log('✅ AuthContext: 状態更新完了', {
+            userExists: !!user,
+            isLoading: false
+          })
+        })
+        
+        console.log('✅ AuthContext: onAuthStateChanged リスナー設定完了')
+      } catch (error) {
+        console.error('❌ AuthContext: Firebase Auth初期化失敗', error)
         setIsLoading(false)
-      })
+      }
     }
 
     setupAuthListener()
 
     // クリーンアップ関数：コンポーネントアンマウント時にリスナー削除
-    return () => unsubscribe?.()
+    return () => {
+      console.log('🧹 AuthContext: クリーンアップ実行')
+      unsubscribe?.()
+    }
   }, [])
 
   /**

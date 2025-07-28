@@ -85,7 +85,7 @@ export const CreateTodoSchema = z.object({
     .string()
     .min(1, 'タイトルは必須です')
     .max(200, 'タイトルは200文字以内で入力してください'),
-  description: z.string().max(1000, '説明は1000文字以内で入力してください').optional(),
+  description: z.string().max(1000, '説明は1000文字以内で入力してください').nullable().optional(),
   completed: z.boolean().default(false).optional(),
   dueDate: z.string().refine(date => {
     return !isNaN(Date.parse(date));

@@ -37,10 +37,25 @@ export const PaginatedResponseSchema = z.object({
   /** 処理成功フラグ */
   success: z.boolean(),
   
-  /** データ配列（型は動的） */
-  data: z.array(z.unknown()),
+  /** データオブジェクト（配列と集計情報を含む） */
+  data: z.object({
+    /** データ配列 */
+    items: z.array(z.unknown()),
+    
+    /** 全体の件数 */
+    total: z.number().int().min(0),
+    
+    /** 現在のページ番号（0ベース） */
+    page: z.number().int().min(0),
+    
+    /** 1ページあたりの件数 */
+    limit: z.number().int().min(1),
+    
+    /** 全ページ数 */
+    totalPages: z.number().int().min(0),
+  }),
   
-  /** ページネーション情報 */
+  /** ページネーション情報（互換性のため） */
   pagination: z.object({
     /** 全体の件数 */
     total: z.number().int().min(0),
@@ -174,7 +189,13 @@ export type ApiResponse<T = unknown> = {
 /** ページネーション情報付きレスポンスの型 */
 export type PaginatedResponse<T = unknown> = {
   success: boolean;
-  data: T[];
+  data: {
+    items: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
   pagination: {
     total: number;
     page: number;
