@@ -51,10 +51,31 @@ export class UserService {
    */
   async getUserById(userId: string): Promise<User | null> {
     try {
+      console.log('🔍 UserService.getUserById: クエリ実行開始', {
+        userId,
+        query: 'SELECT * FROM users WHERE id = ? LIMIT 1',
+      });
+
       const result = await this.db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+      console.log('🔍 UserService.getUserById: クエリ実行結果', {
+        userId,
+        resultCount: result.length,
+        resultPreview: result[0] ? {
+          id: result[0].id,
+          email: result[0].email,
+          displayName: result[0].displayName,
+        } : null,
+      });
 
       return result[0] || null;
     } catch (error) {
+      console.error('❌ UserService.getUserById: エラー発生', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+      });
       throw new Error(`ユーザー取得エラー: ${handleDatabaseError(error)}`);
     }
   }
@@ -89,21 +110,46 @@ export class UserService {
    */
   async createUser(userData: NewUser): Promise<User> {
     try {
+      console.log('🔄 UserService.createUser: 開始', {
+        userData: {
+          id: userData.id,
+          email: userData.email,
+          displayName: userData.displayName,
+        },
+      });
+
       // バリデーション：必須フィールドチェック
       if (!userData.id || !userData.email) {
-        throw new Error('ユーザーIDとメールアドレスは必須です。');
+        const error = 'ユーザーIDとメールアドレスは必須です。';
+        console.error('❌ UserService.createUser: バリデーションエラー', { error });
+        throw new Error(error);
       }
 
       // メールアドレス形式の簡易チェック
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(userData.email)) {
-        throw new Error('有効なメールアドレスを入力してください。');
+        const error = '有効なメールアドレスを入力してください。';
+        console.error('❌ UserService.createUser: メールアドレス形式エラー', { 
+          email: userData.email,
+          error 
+        });
+        throw new Error(error);
       }
 
       // 既存ユーザーの重複チェック
+      console.log('🔍 UserService.createUser: 重複チェック開始');
       const existingUser = await this.getUserById(userData.id);
       if (existingUser) {
-        throw new Error('このユーザーは既に登録されています。');
+        const error = 'このユーザーは既に登録されています。';
+        console.error('❌ UserService.createUser: 重複ユーザーエラー', { 
+          userId: userData.id,
+          existingUser: {
+            id: existingUser.id,
+            email: existingUser.email,
+          },
+          error 
+        });
+        throw new Error(error);
       }
 
       // タイムスタンプ設定
@@ -114,11 +160,43 @@ export class UserService {
         updatedAt: now,
       };
 
+      console.log('🔄 UserService.createUser: データベース挿入開始', {
+        newUserData: {
+          id: newUserData.id,
+          email: newUserData.email,
+          displayName: newUserData.displayName,
+          createdAt: newUserData.createdAt,
+          updatedAt: newUserData.updatedAt,
+        },
+        query: 'INSERT INTO users VALUES (...)',
+      });
+
       // データベースに挿入
       const result = await this.db.insert(users).values(newUserData).returning();
 
+      console.log('✅ UserService.createUser: データベース挿入完了', {
+        result: {
+          id: result[0].id,
+          email: result[0].email,
+          displayName: result[0].displayName,
+          createdAt: result[0].createdAt,
+        },
+      });
+
       return result[0];
     } catch (error) {
+      console.error('❌ UserService.createUser: エラー発生', {
+        userData: {
+          id: userData.id,
+          email: userData.email,
+          displayName: userData.displayName,
+        },
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+        isBusinessLogicError: isBusinessLogicError(error),
+      });
+
       // ビジネスロジックエラーはそのまま再スロー
       if (isBusinessLogicError(error)) {
         throw error;
@@ -214,24 +292,78 @@ export class UserService {
    */
   async findOrCreateUser(firebaseUid: string, email: string, displayName?: string): Promise<User> {
     try {
+      console.log('🔄 UserService.findOrCreateUser: 開始', {
+        firebaseUid,
+        email,
+        displayName,
+        timestamp: new Date().toISOString(),
+      });
+
       // 既存ユーザーチェック
+      console.log('🔍 UserService.findOrCreateUser: 既存ユーザーチェック開始');
       let user = await this.getUserById(firebaseUid);
+
+      console.log('🔍 UserService.findOrCreateUser: 既存ユーザーチェック結果', {
+        userFound: !!user,
+        userId: user?.id || null,
+        userEmail: user?.email || null,
+        userDisplayName: user?.displayName || null,
+      });
 
       if (user) {
         // 既存ユーザーの場合、表示名更新の必要性をチェック
         if (displayName && user.displayName !== displayName) {
+          console.log('🔄 UserService.findOrCreateUser: 表示名更新開始', {
+            oldDisplayName: user.displayName,
+            newDisplayName: displayName,
+          });
           user = await this.updateUser(firebaseUid, { displayName });
+          console.log('✅ UserService.findOrCreateUser: 表示名更新完了');
         }
+        
+        console.log('✅ UserService.findOrCreateUser: 既存ユーザー返却', {
+          userId: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        });
         return user;
       }
 
       // 新規ユーザー作成
-      return await this.createUser({
+      console.log('🔄 UserService.findOrCreateUser: 新規ユーザー作成開始', {
+        firebaseUid,
+        email,
+        displayName,
+      });
+
+      const newUser = await this.createUser({
         id: firebaseUid,
         email,
         displayName,
       });
+
+      console.log('✅ UserService.findOrCreateUser: 新規ユーザー作成完了', {
+        userId: newUser.id,
+        email: newUser.email,
+        displayName: newUser.displayName,
+        createdAt: newUser.createdAt,
+      });
+
+      return newUser;
     } catch (error) {
+      console.error('❌ UserService.findOrCreateUser: エラー発生', {
+        firebaseUid,
+        email,
+        displayName,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+      });
+
+      // 元のエラーの詳細を保持してより具体的なエラーメッセージを提供
+      if (error instanceof Error) {
+        throw new Error(`認証連携エラー [${error.constructor.name}]: ${error.message}`);
+      }
       throw new Error(`認証連携エラー: ${handleDatabaseError(error)}`);
     }
   }
