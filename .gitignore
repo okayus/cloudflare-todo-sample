@@ -71,6 +71,8 @@ coverage/
 
 # Debug logs
 docs/wrangler-tail.json
+packages/backend/wrangler-debug.log
+packages/backend/wrangler.log
 
 # Cache directories
 .cache/

@@ -57,7 +57,6 @@ interface ErrorResponse {
 | `NOT_FOUND` | 404 | リソースが見つからない |
 | `VALIDATION_ERROR` | 400 | リクエストデータのバリデーションエラー |
 | `INTERNAL_ERROR` | 500 | サーバー内部エラー |
-| `RATE_LIMITED` | 429 | レート制限に達した |
 
 ## API エンドポイント
 
@@ -377,39 +376,6 @@ interface User {
   display_name: string;          // 表示名
   created_at: string;            // 作成日時（ISO 8601形式）
   updated_at: string;            // 更新日時（ISO 8601形式）
-}
-```
-
-## レート制限
-
-### 制限値
-
-| エンドポイント | 制限 | ウィンドウ |
-|-------------|------|-----------|
-| 全API | 1000リクエスト/時間 | 1時間 |
-| POST /api/todos | 100リクエスト/時間 | 1時間 |
-| PUT /api/todos/:slug | 500リクエスト/時間 | 1時間 |
-| DELETE /api/todos/:slug | 100リクエスト/時間 | 1時間 |
-
-### レート制限レスポンス
-
-```typescript
-// Rate Limited Response (429)
-{
-  "success": false,
-  "error": {
-    "code": "RATE_LIMITED",
-    "message": "リクエスト制限に達しました。しばらく時間をおいてから再度お試しください"
-  },
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "request_id": "req_123456789"
-}
-
-// Response Headers
-{
-  "X-RateLimit-Limit": "1000",
-  "X-RateLimit-Remaining": "0",
-  "X-RateLimit-Reset": "1640995200"  // UNIX timestamp
 }
 ```
 
