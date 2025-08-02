@@ -247,7 +247,6 @@ export const TaskCreateForm: React.FC<TaskCreateFormProps> = ({
           {...register('dueDate')}
           disabled={disabled || isSubmitting}
           className={errors.dueDate ? 'form-input-error' : 'form-input'}
-          min={new Date().toISOString().split('T')[0]} // 今日以降のみ選択可能
         />
         {errors.dueDate && (
           <p className="form-error animate-slide-down">{errors.dueDate.message}</p>
