@@ -107,14 +107,12 @@ export const LoginForm: React.FC = () => {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     // バリデーション
     if (!validateForm()) {
       return
     }
-
     setIsLoading(true)
-    setErrors({})
+    setErrors({}) // バリデーション成功時のみエラーをクリア
 
     try {
       // Firebase認証でログイン
@@ -183,7 +181,6 @@ export const LoginForm: React.FC = () => {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
                   value={formData.email}
                   onChange={handleInputChange}
                   className={errors.email ? 'form-input-error' : 'form-input'}
@@ -209,7 +206,6 @@ export const LoginForm: React.FC = () => {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  required
                   value={formData.password}
                   onChange={handleInputChange}
                   className={errors.password ? 'form-input-error' : 'form-input'}

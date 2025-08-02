@@ -124,7 +124,7 @@ export const SignupForm: React.FC = () => {
     }
 
     setIsLoading(true)
-    setErrors({})
+    setErrors({}) // バリデーション成功時のみエラーをクリア
 
     try {
       // Firebase認証でサインアップ
@@ -192,7 +192,6 @@ export const SignupForm: React.FC = () => {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
                   value={formData.email}
                   onChange={handleInputChange}
                   className={errors.email ? 'form-input-error' : 'form-input'}
@@ -218,7 +217,6 @@ export const SignupForm: React.FC = () => {
                   name="password"
                   type="password"
                   autoComplete="new-password"
-                  required
                   value={formData.password}
                   onChange={handleInputChange}
                   className={errors.password ? 'form-input-error' : 'form-input'}
@@ -244,7 +242,6 @@ export const SignupForm: React.FC = () => {
                   name="confirmPassword"
                   type="password"
                   autoComplete="new-password"
-                  required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className={errors.confirmPassword ? 'form-input-error' : 'form-input'}
