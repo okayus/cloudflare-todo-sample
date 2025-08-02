@@ -68,14 +68,10 @@ describe('SignupForm', () => {
       )
 
       expect(screen.getByText(/既にアカウントをお持ちの場合/i)).toBeInTheDocument()
-      // 複数のログインリンクが存在することを確認
-      const loginLinks = screen.getAllByRole('link', { name: /ログイン/i })
-      expect(loginLinks).toHaveLength(2)
-      
-      // それぞれのリンクが正しいhrefを持つことを確認
-      loginLinks.forEach(link => {
-        expect(link).toHaveAttribute('href', '/login')
-      })
+      // ログインリンクが存在することを確認
+      const loginLink = screen.getByRole('link', { name: /ログインはこちら/i })
+      expect(loginLink).toBeInTheDocument()
+      expect(loginLink).toHaveAttribute('href', '/login')
     })
 
     it('フォーム初期状態が正しく設定されている', async () => {
