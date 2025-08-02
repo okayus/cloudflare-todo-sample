@@ -5,7 +5,7 @@
  * 認証済みユーザー向けダッシュボードの機能を検証する。
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { User } from 'firebase/auth'
 import type { PaginatedResponse, Todo, ApiResponse } from '@cloudflare-todo-sample/shared'
@@ -96,7 +96,9 @@ describe('Dashboard', () => {
     it('ダッシュボードページが正しく表示される', async () => {
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
       expect(screen.getByText('ダッシュボード')).toBeInTheDocument()
@@ -111,12 +113,14 @@ describe('Dashboard', () => {
     it('ユーザー情報セクションが表示される', async () => {
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       expect(screen.getByText('ユーザー情報')).toBeInTheDocument()
-      expect(screen.getByText('メール:')).toBeInTheDocument()
-      expect(screen.getByText('表示名:')).toBeInTheDocument()
-      expect(screen.getByText('認証状態:')).toBeInTheDocument()
+      expect(screen.getByText('メールアドレス')).toBeInTheDocument()
+      expect(screen.getByText('表示名')).toBeInTheDocument()
+      expect(screen.getByText('認証状態')).toBeInTheDocument()
       
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {
@@ -127,7 +131,9 @@ describe('Dashboard', () => {
     it('フッター情報が表示される', async () => {
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       expect(screen.getByText('Cloudflare Todo Sample Application')).toBeInTheDocument()
       
@@ -143,9 +149,11 @@ describe('Dashboard', () => {
     it('displayNameが設定されている場合は挨拶でdisplayNameを使用', async () => {
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
-      expect(screen.getByText('ようこそ、Test Userさん')).toBeInTheDocument()
+      expect(screen.getByText('おかえりなさい、Test Userさん')).toBeInTheDocument()
       
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {
@@ -170,9 +178,11 @@ describe('Dashboard', () => {
 
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
-      expect(screen.getByText('ようこそ、test@example.comさん')).toBeInTheDocument()
+      expect(screen.getByText('おかえりなさい、testさん')).toBeInTheDocument()
       
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {
@@ -197,7 +207,9 @@ describe('Dashboard', () => {
 
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       expect(screen.getByText('未設定')).toBeInTheDocument()
       
@@ -216,7 +228,9 @@ describe('Dashboard', () => {
 
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {
@@ -235,7 +249,9 @@ describe('Dashboard', () => {
 
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {
@@ -260,7 +276,9 @@ describe('Dashboard', () => {
 
       const { Dashboard } = await import('../Dashboard')
 
-      render(<Dashboard />)
+      await act(async () => {
+        render(<Dashboard />)
+      })
 
       // TaskList の API 呼び出し完了を待つ
       await waitFor(() => {

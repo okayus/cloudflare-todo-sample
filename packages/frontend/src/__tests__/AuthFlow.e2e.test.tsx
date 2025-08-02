@@ -31,7 +31,8 @@ describe('認証フロー E2E テスト', () => {
 
       // ランディングページが表示されることを確認
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
-      expect(screen.getByText('🌟 Cloudflare Todo Sample')).toBeInTheDocument()
+      expect(screen.getByText('Cloudflare')).toBeInTheDocument()
+      expect(screen.getByText('Todo Sample')).toBeInTheDocument()
     })
 
     it('ランディングページに適切な要素が表示される', async () => {
@@ -44,8 +45,8 @@ describe('認証フロー E2E テスト', () => {
 
       // ランディングページの要素を確認
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /🔑 ログイン/i })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /✨ サインアップ/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /ログイン/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /サインアップ/i })).toBeInTheDocument()
       expect(screen.getByText('📖 プロジェクト概要')).toBeInTheDocument()
     })
 

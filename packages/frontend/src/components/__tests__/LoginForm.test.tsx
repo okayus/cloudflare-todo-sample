@@ -68,15 +68,11 @@ describe('LoginForm', () => {
         </BrowserRouter>
       )
 
-      expect(screen.getByText(/アカウントをお持ちでない場合/i)).toBeInTheDocument()
-      // 複数のサインアップリンクが存在することを確認
-      const signupLinks = screen.getAllByRole('link', { name: /サインアップ/i })
-      expect(signupLinks).toHaveLength(2)
-      
-      // それぞれのリンクが正しいhrefを持つことを確認
-      signupLinks.forEach(link => {
-        expect(link).toHaveAttribute('href', '/signup')
-      })
+      expect(screen.getByText(/まだアカウントをお持ちでない場合/i)).toBeInTheDocument()
+      // サインアップリンクが存在することを確認
+      const signupLink = screen.getByRole('link', { name: /サインアップはこちら/i })
+      expect(signupLink).toBeInTheDocument()
+      expect(signupLink).toHaveAttribute('href', '/signup')
     })
   })
 
