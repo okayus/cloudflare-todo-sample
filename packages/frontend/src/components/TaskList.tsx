@@ -144,7 +144,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           total: response.data.total || 0
         })
       } else {
-        throw new Error('タスクの取得に失敗しました')
+        throw new Error('データの読み込みに失敗しました')
       }
     } catch (error) {
       console.error('❌ TaskList: データ取得エラー:', error)
@@ -153,7 +153,7 @@ export const TaskList: React.FC<TaskListProps> = ({
       if (error instanceof Error && error.message.includes('認証')) {
         setErrorMessage('ログインが必要です。再度ログインしてください。')
       } else {
-        setErrorMessage('タスクの取得に失敗しました')
+        setErrorMessage('データの読み込みに失敗しました')
       }
     } finally {
       setIsLoading(false)
@@ -288,7 +288,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   /**
    * エラー状態の表示
    */
-  if (errorMessage && todos.length === 0) {
+  if (errorMessage && !authLoading && !isLoading) {
     return (
       <div data-testid="task-list-error" className={`space-y-6 ${className}`}>
         <div className="flex justify-between items-center">
@@ -308,7 +308,7 @@ export const TaskList: React.FC<TaskListProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-secondary-900 mb-2">データの読み込みに失敗しました</h3>
+          <h3 className="text-lg font-semibold text-secondary-900 mb-2">エラーが発生しました</h3>
           <p className="text-secondary-600 mb-6">{errorMessage}</p>
           <button
             onClick={fetchTodos}
@@ -327,7 +327,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   /**
    * 空状態の表示
    */
-  if (todos.length === 0) {
+  if (todos.length === 0 && !errorMessage && !authLoading && !isLoading) {
     return (
       <div data-testid="task-list-empty" className={`space-y-6 ${className}`}>
         <div className="flex justify-between items-center">
