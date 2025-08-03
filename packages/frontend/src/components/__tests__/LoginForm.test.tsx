@@ -5,7 +5,7 @@
  * Firebase認証を使用したログイン機能を検証する。
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -191,14 +191,20 @@ describe('LoginForm', () => {
       await user.type(emailInput, 'test@example.com')
       await user.type(passwordInput, 'password123')
       
-      await user.click(submitButton)
+      await act(async () => {
+        await user.click(submitButton)
+      })
 
       // ローディング状態を確認
-      expect(screen.getByText(/ログイン中.../i)).toBeInTheDocument()
-      expect(submitButton).toBeDisabled()
+      await waitFor(() => {
+        expect(screen.getByText(/ログイン中.../i)).toBeInTheDocument()
+        expect(submitButton).toBeDisabled()
+      })
 
       // ログイン完了
-      resolveLogin!()
+      act(() => {
+        resolveLogin!()
+      })
     })
 
     it('ログイン失敗時にエラーメッセージが表示される', async () => {
@@ -220,7 +226,9 @@ describe('LoginForm', () => {
       await user.type(emailInput, 'test@example.com')
       await user.type(passwordInput, 'wrongpassword')
       
-      await user.click(submitButton)
+      await act(async () => {
+        await user.click(submitButton)
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/ログインに失敗しました/i)).toBeInTheDocument()
