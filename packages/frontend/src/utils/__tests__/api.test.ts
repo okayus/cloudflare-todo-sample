@@ -47,6 +47,12 @@ function createErrorResponse(status: number, statusText: string, errorData: unkn
 describe('apiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // APIテストでは未ログイン状態のため、警告を抑制
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+  
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe('HTTP Methods', () => {

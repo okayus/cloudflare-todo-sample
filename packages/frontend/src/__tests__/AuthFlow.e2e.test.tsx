@@ -31,7 +31,8 @@ describe('認証フロー E2E テスト', () => {
 
       // ランディングページが表示されることを確認
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
-      expect(screen.getByText('🌟 Cloudflare Todo Sample')).toBeInTheDocument()
+      expect(screen.getByText('Cloudflare')).toBeInTheDocument()
+      expect(screen.getByText('Todo Sample')).toBeInTheDocument()
     })
 
     it('ランディングページに適切な要素が表示される', async () => {
@@ -44,8 +45,8 @@ describe('認証フロー E2E テスト', () => {
 
       // ランディングページの要素を確認
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /🔑 ログイン/i })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /✨ サインアップ/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /ログイン/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /サインアップ/i })).toBeInTheDocument()
       expect(screen.getByText('📖 プロジェクト概要')).toBeInTheDocument()
     })
 
@@ -57,9 +58,9 @@ describe('認証フロー E2E テスト', () => {
         expect(screen.queryByTestId('app-loading')).not.toBeInTheDocument()
       }, { timeout: 5000 })
 
-      // リンクのhref属性を確認
-      const loginLink = screen.getByRole('link', { name: /🔑 ログイン/i })
-      const signupLink = screen.getByRole('link', { name: /✨ サインアップ/i })
+      // リンクのhref属性を確認（絵文字なしのテキストで検索）
+      const loginLink = screen.getByRole('link', { name: /ログイン/i })
+      const signupLink = screen.getByRole('link', { name: /サインアップ/i })
 
       expect(loginLink).toHaveAttribute('href', '/login')
       expect(signupLink).toHaveAttribute('href', '/signup')

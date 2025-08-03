@@ -5,7 +5,7 @@
  * Firebase認証を使用したサインアップ機能を検証する。
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -68,14 +68,10 @@ describe('SignupForm', () => {
       )
 
       expect(screen.getByText(/既にアカウントをお持ちの場合/i)).toBeInTheDocument()
-      // 複数のログインリンクが存在することを確認
-      const loginLinks = screen.getAllByRole('link', { name: /ログイン/i })
-      expect(loginLinks).toHaveLength(2)
-      
-      // それぞれのリンクが正しいhrefを持つことを確認
-      loginLinks.forEach(link => {
-        expect(link).toHaveAttribute('href', '/login')
-      })
+      // ログインリンクが存在することを確認
+      const loginLink = screen.getByRole('link', { name: /ログインはこちら/i })
+      expect(loginLink).toBeInTheDocument()
+      expect(loginLink).toHaveAttribute('href', '/login')
     })
 
     it('フォーム初期状態が正しく設定されている', async () => {
@@ -316,14 +312,20 @@ describe('SignupForm', () => {
       await user.type(passwordInput, 'password123')
       await user.type(confirmPasswordInput, 'password123')
       
-      await user.click(submitButton)
+      await act(async () => {
+        await user.click(submitButton)
+      })
 
       // ローディング状態を確認
-      expect(screen.getByText(/アカウント作成中.../i)).toBeInTheDocument()
-      expect(submitButton).toBeDisabled()
+      await waitFor(() => {
+        expect(screen.getByText(/アカウント作成中.../i)).toBeInTheDocument()
+        expect(submitButton).toBeDisabled()
+      })
 
       // サインアップ完了
-      resolveSignup!()
+      act(() => {
+        resolveSignup!()
+      })
     })
 
     it('サインアップ失敗時にエラーメッセージが表示される', async () => {
@@ -347,7 +349,9 @@ describe('SignupForm', () => {
       await user.type(passwordInput, 'password123')
       await user.type(confirmPasswordInput, 'password123')
       
-      await user.click(submitButton)
+      await act(async () => {
+        await user.click(submitButton)
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/アカウント作成に失敗しました/i)).toBeInTheDocument()
