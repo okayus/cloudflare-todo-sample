@@ -57,7 +57,7 @@ describe('TodoService', () => {
     vi.clearAllMocks();
 
     // TodoServiceインスタンス作成
-    todoService = new TodoService(mockDb as unknown as Database);
+    todoService = new TodoService(mockDb as unknown as Database, { ENVIRONMENT: 'test' });
   });
 
   describe('getTodos', () => {

@@ -111,7 +111,7 @@ export class TaskCreate extends OpenAPIRoute {
       // データベース接続とサービス初期化
       console.log('🔄 TaskCreate: データベース接続・サービス初期化');
       const db = getDatabase(c);
-      const todoService = new TodoService(db);
+      const todoService = new TodoService(db, c.env);
 
       // TODO作成データの準備
       console.log('🔄 TaskCreate: TODO作成データ準備');

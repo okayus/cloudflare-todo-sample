@@ -40,7 +40,7 @@ describe('UserService', () => {
     vi.clearAllMocks();
 
     // UserServiceインスタンス作成
-    userService = new UserService(mockDb as unknown as Database);
+    userService = new UserService(mockDb as unknown as Database, { ENVIRONMENT: 'test' });
   });
 
   describe('getUserById', () => {

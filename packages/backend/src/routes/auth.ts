@@ -125,7 +125,7 @@ export class VerifyAuth extends OpenAPIRoute {
 
       // データベース接続とユーザーサービス初期化
       const db = getDatabase(c);
-      const userService = new UserService(db);
+      const userService = new UserService(db, c.env);
 
       // ユーザー情報をデータベースに同期（存在しない場合は作成）
       const user = await userService.findOrCreateUser(
@@ -248,7 +248,7 @@ export class GetCurrentUser extends OpenAPIRoute {
 
       // データベースから最新のユーザー情報を取得
       const db = getDatabase(c);
-      const userService = new UserService(db);
+      const userService = new UserService(db, c.env);
       const user = await userService.getUserById(decodedToken.sub);
 
       if (!user) {
