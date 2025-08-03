@@ -70,12 +70,6 @@
 				"FIREBASE_PROJECT_ID": "cloudflare-todo-sample",
 				"PUBLIC_JWK_CACHE_KEY": "firebase-jwk-cache"
 			},
-			/** 本番環境でのビルド設定（セキュリティ強化） */
-			"build": {
-				"command": "npm run build",
-				"cwd": ".",
-				"watch_dir": "src"
-			},
 			"kv_namespaces": [
 				{
 					"binding": "JWT_CACHE",
