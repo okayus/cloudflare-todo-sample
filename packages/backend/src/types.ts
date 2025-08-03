@@ -16,6 +16,8 @@ export interface Env {
   FIREBASE_PROJECT_ID: string;
   /** Firebase JWT公開鍵キャッシュキー */
   PUBLIC_JWK_CACHE_KEY: string;
+  /** 実行環境識別子（development/production） */
+  ENVIRONMENT?: string;
 }
 
 /**
