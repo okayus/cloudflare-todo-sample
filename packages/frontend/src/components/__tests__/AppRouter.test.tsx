@@ -5,7 +5,7 @@
  * React Routerを使用したルーティング機能を検証する。
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { User } from 'firebase/auth'
 
@@ -23,9 +23,40 @@ vi.mock('../../contexts/AuthContext', () => ({
   useAuth: mockUseAuth,
 }))
 
+// todoApiのモック（API依存性を除去）
+const mockGetTodos = vi.fn()
+const mockToggleTodoCompletion = vi.fn()
+const mockCreateTodo = vi.fn()
+
+vi.mock('../../utils/todoApi', () => ({
+  getTodos: mockGetTodos,
+  toggleTodoCompletion: mockToggleTodoCompletion,
+  createTodo: mockCreateTodo,
+}))
+
 describe('AppRouter', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    
+    // todoApi モックの設定（デフォルト値）
+    mockGetTodos.mockResolvedValue({
+      success: true,
+      data: {
+        items: [],
+        total: 0,
+        page: 0,
+        limit: 20,
+        totalPages: 0,
+      },
+      pagination: {
+        total: 0,
+        page: 0,
+        limit: 20,
+        totalPages: 0,
+      },
+    })
+    mockToggleTodoCompletion.mockResolvedValue({ success: true, data: null })
+    mockCreateTodo.mockResolvedValue({ success: true, data: null })
   })
 
   describe('パブリックルート', () => {
@@ -111,7 +142,9 @@ describe('AppRouter', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      })
     })
 
     it('未認証ユーザーが/dashboardにアクセスすると/loginにリダイレクト', async () => {
@@ -157,7 +190,9 @@ describe('AppRouter', () => {
       )
 
       // 認証済みユーザーはダッシュボードにリダイレクト
-      expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      })
     })
 
     it('認証済みユーザーが/signupにアクセスすると/dashboardにリダイレクト', async () => {
@@ -179,7 +214,9 @@ describe('AppRouter', () => {
       )
 
       // 認証済みユーザーはダッシュボードにリダイレクト
-      expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      })
     })
 
     it('認証済みユーザーが/（ルート）にアクセスすると/dashboardにリダイレクト', async () => {
@@ -201,7 +238,9 @@ describe('AppRouter', () => {
       )
 
       // 認証済みユーザーはダッシュボードにリダイレクト
-      expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
+      })
     })
   })
 
