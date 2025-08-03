@@ -294,7 +294,28 @@ cd frontend
 - [ ] 認証ルートガード実装（ProtectedRoute）
 - [ ] バックエンドAPI統合（POST/GET /api/todos）
 
-### 🔄 5.4 ドキュメント最終化
+### 🔄 5.4 フロントエンドプロダクションビルドセキュリティ強化 【Issue #38】
+- [ ] **Console削除・Minify強化**: esbuildでconsole.log等を本番環境で削除（約40箇所）
+- [ ] **ソースマップ制御**: 本番環境でhiddenソースマップに設定
+- [ ] **セキュリティヘッダー設定**: CSP、XSS対策、HTTPS強制、フレーム攻撃対策
+- [ ] **ESLintセキュリティ強化**: eslint-plugin-securityの導入
+- [ ] **Bundle最適化**: 不要なライブラリの除去・圧縮強化
+
+**実装対象ファイル:**
+```
+packages/frontend/vite.config.ts          # esbuild設定・console削除・minify強化
+packages/frontend/public/_headers          # Cloudflare Pagesセキュリティヘッダー
+packages/frontend/package.json            # eslint-plugin-security追加
+packages/frontend/eslint.config.js        # セキュリティルール設定
+```
+
+**期待される効果:**
+- Console出力の完全除去によるセキュリティ向上
+- Bundle sizeの削減とパフォーマンス向上
+- XSS/CSRF等の攻撃に対する防御力強化
+- プロダクション環境での機密情報露出防止
+
+### 🔄 5.5 ドキュメント最終化
 - [ ] README更新（セットアップ手順、使い方）
 - [ ] 運用マニュアル作成
 - [ ] トラブルシューティングガイド
