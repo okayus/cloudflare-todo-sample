@@ -25,7 +25,7 @@
   # Content Security Policy (Phase A: 基本設定)
   # Firebase Authentication + React + TailwindCSS に対応
   # 段階的に厳格化予定（Phase B → Phase C）
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com wss://*.firebase.com; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com wss://*.firebase.com https://*.workers.dev; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
   
   # Cross-Origin制御
   Cross-Origin-Embedder-Policy: credentialless
