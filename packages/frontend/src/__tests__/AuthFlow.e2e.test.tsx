@@ -58,9 +58,9 @@ describe('認証フロー E2E テスト', () => {
         expect(screen.queryByTestId('app-loading')).not.toBeInTheDocument()
       }, { timeout: 5000 })
 
-      // リンクのhref属性を確認
-      const loginLink = screen.getByRole('link', { name: /🔑 ログイン/i })
-      const signupLink = screen.getByRole('link', { name: /✨ サインアップ/i })
+      // リンクのhref属性を確認（絵文字なしのテキストで検索）
+      const loginLink = screen.getByRole('link', { name: /ログイン/i })
+      const signupLink = screen.getByRole('link', { name: /サインアップ/i })
 
       expect(loginLink).toHaveAttribute('href', '/login')
       expect(signupLink).toHaveAttribute('href', '/signup')
