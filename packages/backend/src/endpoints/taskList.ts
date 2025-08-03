@@ -150,7 +150,7 @@ export class TaskList extends OpenAPIRoute {
       // データベース接続とサービス初期化
       console.log('🔄 TaskList: データベース接続・サービス初期化');
       const db = getDatabase(c);
-      const todoService = new TodoService(db);
+      const todoService = new TodoService(db, c.env);
 
       // TODO一覧取得（認証済みユーザーIDを使用）
       console.log('🔄 TaskList: TODO一覧取得開始', {

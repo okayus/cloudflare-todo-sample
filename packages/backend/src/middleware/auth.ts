@@ -117,7 +117,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     // データベース接続とユーザーサービス初期化
     console.log('🔄 authMiddleware: ユーザーDB登録確認開始');
     const db = getDatabase(c);
-    const userService = new UserService(db);
+    const userService = new UserService(db, c.env);
 
     // ユーザー自動登録（既存なら取得、新規なら作成）
     const user = await userService.findOrCreateUser(

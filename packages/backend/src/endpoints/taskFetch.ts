@@ -80,7 +80,7 @@ export class TaskFetch extends OpenAPIRoute {
 
           // データベース接続とサービス初期化
           const db = getDatabase(c);
-          const todoService = new TodoService(db);
+          const todoService = new TodoService(db, c.env);
 
           // TODO取得（スラッグとIDの両方を試行）
           let todo = await todoService.getTodoBySlug(userId, taskSlug);
