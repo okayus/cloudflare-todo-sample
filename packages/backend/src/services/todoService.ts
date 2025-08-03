@@ -23,6 +23,7 @@ import {
   normalizeSearchTerm,
   normalizeDate,
 } from '../utils/db';
+import { createSecureLogger } from '../utils/logger';
 
 /**
  * TODO一覧レスポンス型
@@ -49,7 +50,14 @@ export type TodoListResponse = {
  * ユーザー認証、データベース操作、ビジネスロジックを含む。
  */
 export class TodoService {
-  constructor(private db: Database) {}
+  private logger: ReturnType<typeof createSecureLogger>;
+
+  constructor(
+    private db: Database,
+    env: { ENVIRONMENT?: string }
+  ) {
+    this.logger = createSecureLogger(env);
+  }
 
   /**
    * TODO一覧取得（フィルタ・ソート・ページネーション対応）
@@ -239,8 +247,8 @@ export class TodoService {
 
       // TODO作成データの準備
       const now = getCurrentTimestamp();
-      console.log('🔄 TodoService.createTodo: データ準備開始', {
-        userId: userId.substring(0, 8) + '...',
+      this.logger.log('🔄 TodoService.createTodo: データ準備開始', {
+        userId,
         title: todoData.title,
         description: todoData.description,
         dueDate: todoData.dueDate,
@@ -262,9 +270,9 @@ export class TodoService {
         slug,
       };
 
-      console.log('🔍 TodoService.createTodo: 最終挿入データ', {
+      this.logger.log('🔍 TodoService.createTodo: 最終挿入データ', {
         id: newTodoData.id,
-        userId: newTodoData.userId.substring(0, 8) + '...',
+        userId: newTodoData.userId,
         slug: newTodoData.slug,
         title: newTodoData.title,
         description: newTodoData.description,
@@ -276,9 +284,9 @@ export class TodoService {
       });
 
       // データベースに挿入
-      console.log('🔄 TodoService.createTodo: データベース挿入開始');
+      this.logger.log('🔄 TodoService.createTodo: データベース挿入開始');
       const result = await this.db.insert(todos).values(newTodoData).returning();
-      console.log('✅ TodoService.createTodo: データベース挿入成功', {
+      this.logger.log('✅ TodoService.createTodo: データベース挿入成功', {
         insertedCount: result.length,
         insertedId: result[0]?.id,
         insertedTitle: result[0]?.title,
@@ -286,11 +294,7 @@ export class TodoService {
 
       return result[0];
     } catch (error) {
-      console.error('❌ TodoService.createTodo: サービスエラー', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        errorType: error?.constructor?.name,
-      });
+      this.logger.error('❌ TodoService.createTodo: サービスエラー', error);
       throw new Error(`TODO作成エラー: ${handleDatabaseError(error)}`);
     }
   }
