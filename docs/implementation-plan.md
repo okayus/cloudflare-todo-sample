@@ -294,26 +294,46 @@ cd frontend
 - [ ] 認証ルートガード実装（ProtectedRoute）
 - [ ] バックエンドAPI統合（POST/GET /api/todos）
 
-### 🔄 5.4 フロントエンドプロダクションビルドセキュリティ強化 【Issue #38】
-- [ ] **Console削除・Minify強化**: esbuildでconsole.log等を本番環境で削除（約40箇所）
-- [ ] **ソースマップ制御**: 本番環境でhiddenソースマップに設定
-- [ ] **セキュリティヘッダー設定**: CSP、XSS対策、HTTPS強制、フレーム攻撃対策
+### ✅ 5.4 フロントエンドプロダクションビルドセキュリティ強化 【Issue #38】
+
+#### Phase 1: Console削除・Minify強化 ✅ **【PR #39完了】**
+- [x] **Console削除・Minify強化**: esbuildでconsole.log等を本番環境で削除（40箇所→0箇所）
+- [x] **ソースマップ制御**: 本番環境でhiddenソースマップに設定
+- [x] **Bundle最適化**: 7.05 kB削減（1.5%削減）、Gzip: 2.09 kB削減
+
+**実装完了内容:**
+- `packages/frontend/vite.config.ts`: esbuild `drop: ['console', 'debugger']`設定
+- プロダクションビルドでconsole文完全削除確認済み
+- 本番環境デプロイ・動作確認完了
+
+#### Phase 2: セキュリティヘッダー・ESLint強化 🔄 **【PR #40進行中】**
+
+**🔍 セキュリティ現状調査結果:**
+- ❌ **重大**: セキュリティヘッダー未設定（XSS、クリックジャッキング脆弱性）
+- ❌ **重要**: ESLintセキュリティプラグイン未導入
+- ✅ **良好**: eval()、innerHTML、dangerouslySetInnerHTML使用なし
+- ⚠️ **注意**: Firebase統合でCSP設定が必要
+
+**緊急実装予定:**
+- [ ] **セキュリティヘッダー設定**: 最優先実装（重大な脆弱性対策）
+  - CSP（Firebase対応）、XSS対策、クリックジャッキング防止、HTTPS強制
 - [ ] **ESLintセキュリティ強化**: eslint-plugin-securityの導入
-- [ ] **Bundle最適化**: 不要なライブラリの除去・圧縮強化
+- [ ] **Bundle分析・最適化**: rollup-plugin-visualizer、チャンク分割
+- [ ] **セキュリティスキャン**: Mozilla Observatory、Security Headers等
 
 **実装対象ファイル:**
 ```
-packages/frontend/vite.config.ts          # esbuild設定・console削除・minify強化
-packages/frontend/public/_headers          # Cloudflare Pagesセキュリティヘッダー
+packages/frontend/public/_headers          # 新規作成：Cloudflare Pagesセキュリティヘッダー
 packages/frontend/package.json            # eslint-plugin-security追加
 packages/frontend/eslint.config.js        # セキュリティルール設定
+packages/frontend/vite.config.ts          # Bundle分析ツール追加
 ```
 
-**期待される効果:**
-- Console出力の完全除去によるセキュリティ向上
-- Bundle sizeの削減とパフォーマンス向上
-- XSS/CSRF等の攻撃に対する防御力強化
-- プロダクション環境での機密情報露出防止
+**期待されるセキュリティ効果:**
+- XSS/CSRF/クリックジャッキング攻撃防止
+- Mozilla Observatory A評価獲得
+- OWASP推奨セキュリティベストプラクティス準拠
+- 開発時セキュリティ脆弱性自動検出
 
 ### 🔄 5.5 ドキュメント最終化
 - [ ] README更新（セットアップ手順、使い方）

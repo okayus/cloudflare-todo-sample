@@ -1,0 +1,33 @@
+# Cloudflare Pages セキュリティヘッダー設定
+# 
+# このファイルはCloudflare Pagesでセキュリティヘッダーを設定するためのものです。
+# XSS攻撃、クリックジャッキング攻撃、MIME sniffing攻撃等から保護します。
+#
+# 参考: https://developers.cloudflare.com/pages/configuration/headers/
+
+# 全てのページに適用されるセキュリティヘッダー
+/*
+  # XSS対策・MIME sniffing防止
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 0
+  X-Frame-Options: DENY
+  
+  # HTTPS強制（1年間、サブドメイン含む）
+  # 注意: Chrome HSTS preloadリストに追加される可能性があります
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  
+  # Referrer情報制御
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # ブラウザ機能制御（位置情報、マイク、カメラ、FLoC無効化）
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+  
+  # Content Security Policy (Phase A: 基本設定)
+  # Firebase Authentication + React + TailwindCSS に対応
+  # 段階的に厳格化予定（Phase B → Phase C）
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebase.com https://*.firebaseapp.com wss://*.firebase.com; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  
+  # Cross-Origin制御
+  Cross-Origin-Embedder-Policy: credentialless
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
