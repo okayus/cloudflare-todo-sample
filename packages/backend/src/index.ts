@@ -67,7 +67,7 @@ openapi.get('/api/auth/me', GetCurrentUser);
 openapi.get('/api/todos', TaskList);
 openapi.post('/api/todos', TaskCreate);
 openapi.get('/api/todos/:taskSlug', TaskFetch);
-openapi.put('/api/todos/:taskSlug', TaskUpdate);
+openapi.patch('/api/todos/:taskSlug', TaskUpdate);
 openapi.delete('/api/todos/:taskSlug', TaskDelete);
 
 // ヘルスチェックエンドポイント
@@ -83,7 +83,7 @@ app.get('/health', c => {
 openapi.get('/api/tasks', TaskList);
 openapi.post('/api/tasks', TaskCreate);
 openapi.get('/api/tasks/:taskSlug', TaskFetch);
-openapi.put('/api/tasks/:taskSlug', TaskUpdate);
+openapi.patch('/api/tasks/:taskSlug', TaskUpdate);
 openapi.delete('/api/tasks/:taskSlug', TaskDelete);
 
 // Honoアプリケーションのエクスポート
